@@ -4,6 +4,35 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Autosave to the file.** Where the browser can keep a link to a file (Chrome,
+  Edge), Open and Save link the drawing to the real file on disk and every edit
+  is written to it a moment after it is made, so nothing is lost by forgetting
+  to save or by closing the server. The bar names the file edits go to, or says
+  "No file" when they only reach the browser's own storage. New and Sample
+  unlink the file first, so they can never overwrite it. Browsers without the
+  API keep the download-based Save.
+- **Reload**, next to Save: reads the file again from disk, as one undo step
+  and without moving the view. The file is checked every two seconds and when
+  the window gets focus back; when something else has changed it, Reload turns
+  amber and autosave pauses rather than overwrite those changes. Save asks
+  before overwriting a file changed from outside.
+- **Save as…** (`Ctrl+Shift+S`).
+- **Right click a wire in the schematic** to change its colour, with the same
+  standard colour picker the sheet uses. The colour is written into the cavity
+  tables at both ends of the wire.
+- **Find and replace** (`Ctrl+F`, `Ctrl+H`) over the tables, connector names,
+  branch lengths, labels and title block. Matches are marked on the sheet,
+  match case and whole-cell options are offered, and Replace all is a single
+  undo step. Renaming a connector through it carries the new name into its table
+  and every reference to it.
+- A **Type** column for cavity tables (`Type` or `Tipo`), present in new cavity
+  tables, and _Insert → Type column in every cavity table_ to add it to existing
+  drawings.
+
 ## [1.2.0]
 
 ### Added

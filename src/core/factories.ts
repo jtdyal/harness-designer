@@ -16,13 +16,14 @@ export function cavityTable(t: Translate, x: number, y: number, title?: string):
       t("table.head.cavity"),
       t("table.head.color"),
       t("table.head.section"),
+      t("table.head.type"),
       t("table.head.dest"),
       t("table.head.pin"),
       t("table.head.notes"),
     ],
     rows: [
-      ["1", "", "", "", "", ""],
-      ["2", "", "", "", "", ""],
+      ["1", "", "", "", "", "", ""],
+      ["2", "", "", "", "", "", ""],
     ],
   };
 }

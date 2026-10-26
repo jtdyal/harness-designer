@@ -327,6 +327,7 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
     const items: MenuItem[] = [
       { label: t("topbar.new"), run: run(app, "doc.new") },
       { label: t("topbar.open"), shortcut: "Ctrl+O", run: run(app, "doc.open") },
+      { label: t("topbar.saveAs"), shortcut: "Ctrl+Shift+S", run: run(app, "doc.saveAs") },
       { label: t("topbar.sample"), run: run(app, "doc.sample") },
       { separator: true },
       { header: t("topbar.export") },
@@ -342,6 +343,18 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
     }
     dropdown(ev.currentTarget as HTMLElement, items);
   };
+
+  // lit while the file on disk has been changed by something other than this window
+  const reload = button({
+    label: t("topbar.reload"),
+    iconName: "reload",
+    tip: t("topbar.reload.none"),
+    onClick: run(app, "doc.reload"),
+    collapsible: true,
+  });
+  // which file the edits are going to, or that they are going nowhere but the browser
+  const fileTag = document.createElement("span");
+  fileTag.className = "filetag btn__label--optional";
 
   nav.append(
     group(
@@ -362,6 +375,8 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
         variant: "primary",
         collapsible: true,
       }),
+      reload,
+      fileTag,
     ),
   );
 
@@ -370,6 +385,7 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
   const insertMenu = (ev: MouseEvent): void =>
     dropdown(ev.currentTarget as HTMLElement, [
       { label: t("insert.cavity"), run: run(app, "insert.cavity") },
+      { label: t("insert.typeColumn"), run: run(app, "insert.typeColumn") },
       { label: t("insert.notes"), run: run(app, "insert.notes") },
       { label: t("insert.revisions"), run: run(app, "insert.revisions") },
       { label: t("insert.wirelist"), run: run(app, "insert.wirelist") },
@@ -564,9 +580,38 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
     checkButton.setAttribute("aria-label", state);
   };
 
+  const syncFile = (): void => {
+    const { file } = app;
+    const tip = file.stale
+      ? t("topbar.reload.stale")
+      : file.attached
+        ? t("topbar.reload.tip")
+        : t("topbar.reload.none");
+    reload.disabled = !file.attached;
+    reload.classList.toggle("is-stale", file.stale);
+    setTip(reload, tip);
+    reload.setAttribute("aria-label", tip);
+
+    fileTag.textContent = file.name ?? t("topbar.file.none");
+    fileTag.classList.toggle("is-off", !file.attached || !file.autosaving);
+    fileTag.classList.toggle("is-stale", file.stale);
+    setTip(
+      fileTag,
+      !file.attached
+        ? t("topbar.file.none.tip")
+        : file.stale
+          ? t("topbar.reload.stale")
+          : file.autosaving
+            ? t("topbar.file.linked.tip", { name: file.name ?? "" })
+            : t("topbar.file.readonly.tip", { name: file.name ?? "" }),
+    );
+  };
+
   syncEdit();
   syncSnap();
   syncCheck();
+  syncFile();
+  disposers.push(app.file.onChange(syncFile));
 
   // the count costs a full scan of the tables, so it refreshes once a burst of
   // edits settles rather than on every keystroke
