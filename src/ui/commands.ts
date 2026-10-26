@@ -10,6 +10,7 @@
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
 import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
+import { addTypeColumn } from "@/core/typecolumn";
 import { copySelection, countOf, isEmptyClipping } from "@/core/clipboard";
 import { heldClipping, hold, pasteHeldAt } from "@/ui/clipboard";
 import { pointerAt } from "@/ui/pointer";
@@ -23,8 +24,8 @@ import { wireRowsWithLength } from "@/core/routing";
 import { wireListRows } from "@/core/wirelist";
 import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
-import { saveDocToFile } from "@/io/file";
 import { tableSize } from "@/render/tables";
+import { openFind } from "@/ui/find";
 import { openCommandPalette } from "@/ui/palette";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
@@ -279,28 +280,45 @@ export function registerBuiltinCommands(app: AppContext): void {
     {
       id: "doc.new",
       titleKey: "cmd.new",
-      run: (a) => replaceDocument(a, "dialog.new.title", "dialog.new.body", () => a.store.load(emptyDoc())),
+      run: (a) =>
+        replaceDocument(a, "dialog.new.title", "dialog.new.body", () => {
+          // a new drawing is not the linked file: left linked, the next autosave would empty it
+          a.file.detach();
+          a.store.load(emptyDoc());
+        }),
     },
     {
       id: "doc.sample",
       titleKey: "cmd.sample",
       run: (a) =>
-        replaceDocument(a, "dialog.sample.title", "dialog.sample.body", () => a.store.load(sampleDoc(a.t))),
+        replaceDocument(a, "dialog.sample.title", "dialog.sample.body", () => {
+          a.file.detach();
+          a.store.load(sampleDoc(a.t));
+        }),
     },
     {
       id: "doc.open",
       titleKey: "cmd.open",
       shortcut: "Ctrl+O",
-      run: (a) => a.openFilePicker(),
+      run: (a) => a.file.open(),
     },
     {
       id: "doc.save",
       titleKey: "cmd.save",
       shortcut: "Ctrl+S",
-      run: (a) => {
-        saveDocToFile(a.doc);
-        a.toast.show(a.t("toast.saved"));
-      },
+      run: (a) => a.file.save(),
+    },
+    {
+      id: "doc.saveAs",
+      titleKey: "cmd.saveAs",
+      shortcut: "Ctrl+Shift+S",
+      run: (a) => a.file.saveAs(),
+    },
+    {
+      id: "doc.reload",
+      titleKey: "cmd.reload",
+      enabled: (a) => a.file.attached,
+      run: (a) => a.file.reload(),
     },
     {
       id: "doc.check",
@@ -335,6 +353,18 @@ export function registerBuiltinCommands(app: AppContext): void {
       palette: false,
       enabled: (a) => a.store.canRedo,
       run: (a) => a.commands.run("edit.redo"),
+    },
+    {
+      id: "edit.find",
+      titleKey: "cmd.find",
+      shortcut: "Ctrl+F",
+      run: (a) => openFind(a, "find"),
+    },
+    {
+      id: "edit.replace",
+      titleKey: "cmd.replace",
+      shortcut: "Ctrl+H",
+      run: (a) => openFind(a, "replace"),
     },
     {
       id: "edit.copy",
@@ -502,6 +532,17 @@ export function registerBuiltinCommands(app: AppContext): void {
       id: "insert.cavity",
       titleKey: "cmd.insertCavity",
       run: (a) => insertTable(a, cavityTable(a.t, 0, 0)),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        a.store.edit((doc) => {
+          n = addTypeColumn(doc, a.t("table.head.type"));
+        }, "type-column");
+        a.toast.show(n ? a.t("toast.typeColumnAdded", { n }) : a.t("toast.typeColumnNone"));
+      },
     },
     {
       id: "insert.notes",

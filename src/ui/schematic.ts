@@ -14,8 +14,12 @@
 import { snapTo } from "@/core/geometry";
 import type { Store } from "@/core/store";
 import type { Point, Selection } from "@/core/types";
-import type { SchemBox } from "@/core/schematic";
+import type { SchemBox, SchemWire } from "@/core/schematic";
+import { setWireColor } from "@/core/wirecolor";
+import { t } from "@/i18n";
 import type { SchematicRenderer } from "@/render/schematic";
+import { openColorPicker } from "./colorpicker";
+import { openMenu } from "./menu";
 
 /** Below this the movement was a click, not a drag. */
 const DRAG_THRESHOLD_PX = 3;
@@ -49,6 +53,8 @@ export interface SchematicInteractionOptions {
   onFocusChange(): void;
   /** double click on a box: show the same connector on the sheet */
   onReveal?(selection: Selection): void;
+  /** something to tell the person, e.g. that a wire has nowhere to keep a colour */
+  notify?(message: string): void;
 }
 
 export function attachSchematicInteraction(opts: SchematicInteractionOptions): () => void {
@@ -181,6 +187,37 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     releaseCapture(ev.pointerId);
   };
 
+  /**
+   * Right click on a wire: what can be done to it is the colour, which is the
+   * one thing about a wire this view can change. The colour lives in the cavity
+   * table at each end, so that is where it is written.
+   */
+  const setColor = (wire: SchemWire, value: string): void => {
+    const written = store.edit((doc) => {
+      setWireColor(doc, [wire.fromLabel, wire.toLabel], value);
+    }, "wire-color");
+    if (!written && value) opts.notify?.(t("toast.wireColorNone"));
+  };
+
+  const onContextMenu = (ev: MouseEvent): void => {
+    const wireId = attrOf(ev.target, "wire");
+    if (!wireId) return;
+    const wire = schematic.model().wires.find((w) => w.id === wireId);
+    if (!wire) return;
+    ev.preventDefault();
+    // the wire the menu is about stays lit, so it is clear which one it is
+    store.select(null);
+    focusWire(wire.id);
+    openMenu(ev.clientX, ev.clientY, [
+      { header: `${wire.fromLabel} → ${wire.toLabel}` },
+      {
+        label: t("menu.wireColor"),
+        run: () => openColorPicker({ value: wire.color, onPick: (value) => setColor(wire, value) }),
+      },
+      { label: t("menu.wireColorClear"), disabled: wire.color.trim() === "", run: () => setColor(wire, "") },
+    ]);
+  };
+
   const onPointerUp = (ev: PointerEvent): void => endPointer(ev, false);
   const onPointerCancel = (ev: PointerEvent): void => endPointer(ev, true);
 
@@ -201,6 +238,7 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
   svg.addEventListener("pointermove", onPointerMove);
   svg.addEventListener("pointerup", onPointerUp);
   svg.addEventListener("pointercancel", onPointerCancel);
+  svg.addEventListener("contextmenu", onContextMenu);
   svg.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("blur", cancelGestures);
   document.addEventListener("pointerup", onPointerUp);
@@ -210,6 +248,7 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     svg.removeEventListener("pointermove", onPointerMove);
     svg.removeEventListener("pointerup", onPointerUp);
     svg.removeEventListener("pointercancel", onPointerCancel);
+    svg.removeEventListener("contextmenu", onContextMenu);
     svg.removeEventListener("wheel", onWheel);
     window.removeEventListener("blur", cancelGestures);
     document.removeEventListener("pointerup", onPointerUp);

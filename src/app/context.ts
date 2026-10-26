@@ -9,6 +9,7 @@
 import type { Store } from "@/core/store";
 import type { HarnessDoc, Issue, Point, Rect, Selection } from "@/core/types";
 import type { Locale, Translate } from "@/i18n";
+import type { FoundMarks } from "@/render/tables";
 
 /* ---------------- drawing ---------------- */
 
@@ -25,6 +26,8 @@ export interface RendererApi {
    * it — it is the sheet answering a question asked next door.
    */
   highlight: { nodes: ReadonlySet<string>; segments: ReadonlySet<string> } | null;
+  /** cells Find matched, marked on the tables; null when nothing is being searched for */
+  found: FoundMarks | null;
   /** redraw deferred to the next frame: safe to call on every event */
   requestRedraw(): void;
   /** immediate redraw: only when the result has to be read straight away */
@@ -185,10 +188,40 @@ export interface PluginHostApi {
  */
 export type SidebarSection = (container: HTMLElement, selection: Selection | null, app: AppContext) => void;
 
+/* ---------------- file on disk ---------------- */
+
+/**
+ * The file the drawing is linked to, where the browser allows linking one.
+ *
+ * Linked, every edit is written to it as it is made, and the file is watched
+ * for changes made by anything else. Unlinked (a new drawing, the sample, a
+ * browser without the File System Access API) the drawing only lives in the
+ * browser's own storage and saving is a download, as it always was.
+ */
+export interface FileApi {
+  /** a file on disk is linked to the drawing */
+  readonly attached: boolean;
+  readonly name: string | null;
+  /** edits reach the file as they are made */
+  readonly autosaving: boolean;
+  /** something else changed the file since this window last read it */
+  readonly stale: boolean;
+  /** called whenever any of the above changes; returns the unsubscribe */
+  onChange(fn: () => void): () => void;
+  open(): Promise<void>;
+  save(): Promise<void>;
+  saveAs(): Promise<void>;
+  /** reads the file again, replacing the drawing (one undo step) */
+  reload(): Promise<void>;
+  /** unlinks the file, before the drawing is replaced by something unrelated */
+  detach(): void;
+}
+
 /* ---------------- application context ---------------- */
 
 export interface AppContext {
   store: Store;
+  file: FileApi;
   renderer: RendererApi;
   schematic: SchematicApi;
   t: Translate;
