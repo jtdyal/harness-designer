@@ -26,6 +26,9 @@ All notable changes to this project are documented here. The format follows
   match case and whole-cell options are offered, and Replace all is a single
   undo step. Renaming a connector through it carries the new name into its table
   and every reference to it.
+- A **Type** column for cavity tables (`Type` or `Tipo`), present in new cavity
+  tables, and _Insert → Type column in every cavity table_ to add it to existing
+  drawings.
 - **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
   other one converts every size in the drawing, as one undo step, to the nearest
   standard size of the new scale, and heads the Section column of every table
@@ -34,6 +37,10 @@ All notable changes to this project are documented here. The format follows
   standard sizes for the unit, each with its equivalent in the other, and
   _Other size…_ for anything not on it. Converting is to the nearest standard
   size, so going to AWG and back can land on a neighbouring size.
+- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
+  cell, with _Other type…_ and _Clear type_. The Type column is now headed
+  _Wire type_ (older drawings keep _Type_, which is still recognised), and the
+  type, like colour and size, is brought into step at the far end of the wire.
 
 ## [1.2.0]
 

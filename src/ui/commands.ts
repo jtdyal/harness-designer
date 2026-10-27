@@ -10,6 +10,7 @@
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
 import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
+import { addTypeColumn } from "@/core/typecolumn";
 import { setWireUnit, unitLabel } from "@/core/wiresize";
 import type { UnitChange } from "@/core/wiresize";
 import { copySelection, countOf, isEmptyClipping } from "@/core/clipboard";
@@ -564,6 +565,17 @@ export function registerBuiltinCommands(app: AppContext): void {
       id: "insert.cavity",
       titleKey: "cmd.insertCavity",
       run: (a) => insertTable(a, cavityTable(a.t, 0, 0, undefined, a.doc.wireUnit)),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        a.store.edit((doc) => {
+          n = addTypeColumn(doc, a.t("table.head.type"));
+        }, "type-column");
+        a.toast.show(n ? a.t("toast.typeColumnAdded", { n }) : a.t("toast.typeColumnNone"));
+      },
     },
     {
       id: "insert.notes",
