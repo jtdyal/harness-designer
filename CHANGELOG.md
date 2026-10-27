@@ -60,6 +60,10 @@ All notable changes to this project are documented here. The format follows
 - **Delete wire**: right-click a wire in the schematic, or pick it and press
   Delete. Both cavities let go of it (colour, size and type go with it; function
   and notes stay), as one undo step.
+- **Right-click menus in the schematic**: the background offers _Zoom to fit_, a
+  connector offers _Connector body…_ and _Delete connector_, and a splice offers
+  _Delete splice_. Deleting disconnects the wires that went to it, deletes its
+  table and takes it off the sheet, after asking, as one undo step.
 - **Wires can start from a splice** (or any connector with no cavities) in the
   schematic: hover it and drag from the dot on either side onto a cavity.
 - **Black wires show in the dark theme.** A wire that is black or nearly so gets
