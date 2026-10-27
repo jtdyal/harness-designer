@@ -15,6 +15,22 @@ export type NodeKind = "junction" | "connector";
  */
 export type ConnectorStyle = "plug" | "ring" | "faston" | "pin" | "splice" | "none" | (string & {});
 
+/** Whether a connector body is the side that carries the pins or the side that carries the sockets. */
+export type BodyForm = "" | "plug" | "receptacle";
+
+/**
+ * What a multi-pin connector physically is. It is kept on the connector
+ * whatever its symbol is changed to, so that switching a connector to a
+ * terminal and back never loses it.
+ */
+export interface ConnectorBody {
+  form: BodyForm;
+  manufacturer: string;
+  series: string;
+  description: string;
+  partNumber: string;
+}
+
 export interface HNode {
   id: string;
   x: number;
@@ -43,6 +59,8 @@ export interface HNode {
    * the cable leaves it along that axis.
    */
   facing?: "right" | "left" | "up" | "down";
+  /** Plug or receptacle, maker, series, description and part number. Only meaningful on a multi-pin connector. */
+  body?: ConnectorBody;
 }
 
 export interface Segment {
@@ -144,7 +162,29 @@ export interface HarnessDoc {
    * rather than being squared off underneath the person who drew it.
    */
   square?: boolean;
+  /**
+   * The unit wire sizes are written in: the Section column is headed with it
+   * and holds bare numbers in it. Absent in a drawing that has never been given
+   * one, whose sizes are then read from how its column is headed.
+   */
+  wireUnit?: WireUnit;
+  /** Starting point for new wires and connectors. Absent when none has been set. */
+  defaults?: WireDefaults;
 }
+
+/** What a new wire or connector starts with; filled into what is empty, never over what is written. */
+export interface WireDefaults {
+  /** colour as a cell writes it */
+  color: string;
+  /** wire size, a bare number in the drawing's unit */
+  size: string;
+  type: string;
+  /** the body a connector gets when it is drawn as a multi-pin connector */
+  body?: ConnectorBody;
+}
+
+/** Metric cross-section, or American Wire Gauge. */
+export type WireUnit = "mm2" | "awg";
 
 export type EntityType = "node" | "segment" | "inline" | "table";
 

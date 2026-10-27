@@ -8,8 +8,12 @@
  * posto: `matchShortcut`.
  */
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
-import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
+import { isMultiPin } from "@/core/connectorbody";
+import { deleteEntity, emptyDoc, findNode, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
+import { addTypeColumn } from "@/core/typecolumn";
+import { setWireUnit, unitLabel } from "@/core/wiresize";
+import type { UnitChange } from "@/core/wiresize";
 import { copySelection, countOf, isEmptyClipping } from "@/core/clipboard";
 import { heldClipping, hold, pasteHeldAt } from "@/ui/clipboard";
 import { pointerAt } from "@/ui/pointer";
@@ -17,13 +21,16 @@ import { snapTo } from "@/core/geometry";
 import { uid } from "@/core/ids";
 import { cavityTable, notesTable, revisionsTable, titleBlock, wireListHeadings } from "@/core/factories";
 import { sampleDoc } from "@/core/sample";
-import type { Point, Table } from "@/core/types";
+import type { Point, Table, WireUnit } from "@/core/types";
 import { validateDoc } from "@/core/validate";
 import { wireRowsWithLength } from "@/core/routing";
 import { wireListRows } from "@/core/wirelist";
 import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
 import { tableSize } from "@/render/tables";
+import { openConnectorBody } from "@/ui/body";
+import { openDefaults } from "@/ui/defaults";
+import { openFind } from "@/ui/find";
 import { openCommandPalette } from "@/ui/palette";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
@@ -227,7 +234,7 @@ function refreshWireList(app: AppContext): void {
     app.toast.show(t("wirelist.empty"));
     return;
   }
-  const head = wireListHeadings(t);
+  const head = wireListHeadings(t, app.doc.wireUnit);
   const rows = wireListRows(wires);
   const title = t("table.title.wirelist");
   const existing = app.doc.tables.find((tb) => tb.kind === "table" && tb.title === title);
@@ -245,6 +252,26 @@ function refreshWireList(app: AppContext): void {
     insertTable(app, { id: uid("t"), x: 0, y: 0, kind: "table", title, head, rows });
   }
   app.toast.show(t("toast.wirelistUpdated", { n: wires.length }));
+}
+
+/**
+ * Puts every wire size in the drawing into the given unit, as one undo step.
+ * The bar's unit button follows through the "settings" event.
+ */
+function switchWireUnit(app: AppContext, unit: WireUnit): void {
+  let change: UnitChange = { converted: 0, skipped: 0 };
+  const changed = app.store.edit((doc) => {
+    change = setWireUnit(doc, unit);
+  }, "wire-unit");
+  if (!changed) return;
+  app.store.emit("settings", {});
+  app.refreshProps();
+  const key = change.skipped
+    ? "toast.wireUnitSkipped"
+    : change.converted
+      ? "toast.wireUnit"
+      : "toast.wireUnitSet";
+  app.toast.show(app.t(key, { unit: unitLabel(unit), n: change.converted, m: change.skipped }));
 }
 
 async function replaceDocument(
@@ -351,6 +378,18 @@ export function registerBuiltinCommands(app: AppContext): void {
       palette: false,
       enabled: (a) => a.store.canRedo,
       run: (a) => a.commands.run("edit.redo"),
+    },
+    {
+      id: "edit.find",
+      titleKey: "cmd.find",
+      shortcut: "Ctrl+F",
+      run: (a) => openFind(a, "find"),
+    },
+    {
+      id: "edit.replace",
+      titleKey: "cmd.replace",
+      shortcut: "Ctrl+H",
+      run: (a) => openFind(a, "replace"),
     },
     {
       id: "edit.copy",
@@ -513,11 +552,49 @@ export function registerBuiltinCommands(app: AppContext): void {
       },
     },
 
+    {
+      id: "doc.defaults",
+      titleKey: "cmd.defaults",
+      run: (a) => openDefaults(a),
+    },
+    {
+      id: "node.body",
+      titleKey: "cmd.connectorBody",
+      run: (a) => {
+        const picked = a.store.selection;
+        const node = picked?.type === "node" ? findNode(a.doc, picked.id) : undefined;
+        if (!node || !isMultiPin(node) || !openConnectorBody(a, node.id)) {
+          a.toast.error(a.t("toast.bodyNeedsConnector"));
+        }
+      },
+    },
+    {
+      id: "doc.unitMm2",
+      titleKey: "cmd.unitMm2",
+      run: (a) => switchWireUnit(a, "mm2"),
+    },
+    {
+      id: "doc.unitAwg",
+      titleKey: "cmd.unitAwg",
+      run: (a) => switchWireUnit(a, "awg"),
+    },
+
     /* ---- inserting ---- */
     {
       id: "insert.cavity",
       titleKey: "cmd.insertCavity",
-      run: (a) => insertTable(a, cavityTable(a.t, 0, 0)),
+      run: (a) => insertTable(a, cavityTable(a.t, 0, 0, undefined, a.doc.wireUnit)),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        a.store.edit((doc) => {
+          n = addTypeColumn(doc, a.t("table.head.type"));
+        }, "type-column");
+        a.toast.show(n ? a.t("toast.typeColumnAdded", { n }) : a.t("toast.typeColumnNone"));
+      },
     },
     {
       id: "insert.notes",

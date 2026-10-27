@@ -465,6 +465,24 @@ body {
     animation: none;
   }
 }
+/* Find and replace panel */
+.find__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 4px;
+}
+.find__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--txt-dim);
+  cursor: pointer;
+}
+.find__status {
+  margin-top: 10px;
+}
 /* name of the file the edits are written to */
 .filetag {
   max-width: 190px;
@@ -698,6 +716,35 @@ body {
     opacity: 0;
     transform: translateY(3px);
   }
+}
+
+/* the defaults panel: what a colour or a body is, written next to the button that changes it */
+.defaults__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.defaults__swatch {
+  width: 22px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  flex: none;
+}
+
+/* the cavities of a schematic box that have no wire: where one can be started */
+.sch-port {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+[data-sch="box"]:hover .sch-port {
+  opacity: 0.95;
 }
 
 /* ---------------- menus ---------------- */

@@ -21,6 +21,59 @@ All notable changes to this project are documented here. The format follows
   amber and autosave pauses rather than overwrite those changes. Save asks
   before overwriting a file changed from outside.
 - **Save as…** (`Ctrl+Shift+S`).
+- **Right click a wire in the schematic** to change its colour, with the same
+  standard colour picker the sheet uses. The colour is written into the cavity
+  tables at both ends of the wire.
+- **Find and replace** (`Ctrl+F`, `Ctrl+H`) over the tables, connector names,
+  branch lengths, labels and title block. Matches are marked on the sheet,
+  match case and whole-cell options are offered, and Replace all is a single
+  undo step. Renaming a connector through it carries the new name into its table
+  and every reference to it.
+- A **Type** column for cavity tables (`Type` or `Tipo`), present in new cavity
+  tables, and _Insert → Type column in every cavity table_ to add it to existing
+  drawings.
+- **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
+  other one converts every size in the drawing, as one undo step, to the nearest
+  standard size of the new scale, and heads the Section column of every table
+  (and the wire list) with the unit. Text that is not a size is left as typed.
+  The unit is saved with the drawing. Editing a Section cell opens the list of
+  standard sizes for the unit, each with its equivalent in the other, and
+  _Other size…_ for anything not on it. Converting is to the nearest standard
+  size, so going to AWG and back can land on a neighbouring size.
+- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
+  cell, with _Other type…_ and _Clear type_. The Type column is now headed
+  _Wire type_ (older drawings keep _Type_, which is still recognised), and the
+  type, like colour and size, is brought into step at the far end of the wire.
+- **Connector body** for multi-pin connectors: plug or receptacle, manufacturer,
+  series, description and part number, set from the connector's right-click menu
+  (_Connector body…_) or the command palette. The list starts with the DEUTSCH
+  DTM plugs and receptacles and the Metri-Pack series, and every body used is
+  offered from then on, from the drawing and from other drawings. The body is
+  kept on the connector when it is drawn as a terminal or a splice, and comes
+  back when it is drawn as a plug again. It is shown under the connector's name
+  on the sheet and as the tooltip of its box in the schematic.
+- **Dragging wires in the schematic.** Drag the end of a wire onto another
+  cavity, or another connector, to move it there; drag from a free cavity onto
+  another to make a wire. The cavity under the pointer is outlined, in red when
+  it already has a wire. The cavity tables at both ends are rewritten as if
+  typed, the colour, size and type go with the wire, and it is one undo step.
+- **Delete wire**: right-click a wire in the schematic, or pick it and press
+  Delete. Both cavities let go of it (colour, size and type go with it; function
+  and notes stay), as one undo step.
+- **Right-click menus in the schematic**: the background offers _Zoom to fit_, a
+  connector offers _Connector body…_ and _Delete connector_, and a splice offers
+  _Delete splice_. Deleting disconnects the wires that went to it, deletes its
+  table and takes it off the sheet, after asking, as one undo step.
+- **Wires can start from a splice** (or any connector with no cavities) in the
+  schematic: hover it and drag from the dot on either side onto a cavity.
+- **Black wires show in the dark theme.** A wire that is black or nearly so gets
+  a light edge, in the schematic and on the sheet, and no other colour is
+  touched. Export and print are unchanged.
+- **Defaults** in the bar: wire size, wire type, wire colour and connector body.
+  A wire starts from them when it is connected, in the schematic or by typing a
+  destination in a table, and a connector gets the body when it is drawn as a
+  plug. They only fill empty cells, are saved with the drawing, and the size
+  follows a change of unit.
 
 ## [1.2.0]
 

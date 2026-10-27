@@ -1,5 +1,7 @@
 import { DOC_VERSION } from "./types";
 import type { DocMeta, HarnessDoc, HNode, Inline, Point, Segment, Table } from "./types";
+import { normalizeBody } from "./connectorbody";
+import { normalizeDefaults } from "./defaults";
 import { seedIds, uid } from "./ids";
 import { T_MAX, T_MIN, alongPolyline, clamp, dist, polylineLength, projectPolyline } from "./geometry";
 
@@ -68,6 +70,9 @@ export function normalizeDoc(input: unknown): HarnessDoc {
   // a file that does not mention it was drawn before this existed, and squaring
   // it off on open would rearrange a drawing nobody asked to rearrange
   doc.square = raw.square === true;
+  if (raw.wireUnit === "mm2" || raw.wireUnit === "awg") doc.wireUnit = raw.wireUnit;
+  const defaults = normalizeDefaults(raw.defaults);
+  if (defaults) doc.defaults = defaults;
 
   const meta = (typeof raw.meta === "object" && raw.meta !== null ? raw.meta : {}) as Partial<DocMeta>;
   doc.meta = {
@@ -99,6 +104,9 @@ export function normalizeDoc(input: unknown): HarnessDoc {
     const mate = str(src.mate);
     if (mate && mate !== id) node.mate = mate;
     if ((FACINGS as readonly string[]).includes(str(src.facing))) node.facing = src.facing;
+    // kept whatever the style is: a body outlives a change of symbol
+    const body = normalizeBody(src.body);
+    if (body) node.body = body;
     doc.nodes.push(node);
   }
   normalizeMates(doc);
@@ -459,6 +467,8 @@ export interface TableColumns {
   color?: number;
   section?: number;
   func?: number;
+  /** what kind of cavity or terminal it is, e.g. "6.3 mm blade" or "Metri-Pack 150" */
+  type?: number;
 }
 
 /**
@@ -481,6 +491,7 @@ export function tableColumns(t: Table): TableColumns {
     if (idx.color === undefined && /^(colore|color|colour)$/.test(s)) idx.color = i;
     if (idx.section === undefined && /(sezione|section|gauge|awg|mm²|mm2)/.test(s)) idx.section = i;
     if (idx.func === undefined && /(funzione|function|circuito|circuit|signal)/.test(s)) idx.func = i;
+    if (idx.type === undefined && /^(wire[ -]?type|type|tipo( filo)?)$/.test(s)) idx.type = i;
   });
 
   if (idx.cavity === undefined) {

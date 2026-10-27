@@ -30,6 +30,9 @@ import {
   tableForNode,
   isAutoLinkEnabled,
 } from "@/core/doc";
+import { isMultiPin } from "@/core/connectorbody";
+import { connectionCount, deleteConnector } from "@/core/rewire";
+import { applyBodyDefault } from "@/core/defaults";
 import { cavityTable, cavityTableFor } from "@/core/factories";
 import { projectT, snapTo } from "@/core/geometry";
 import { visibleConnectorSymbols } from "@/render/connectors";
@@ -39,7 +42,9 @@ import { menuContributors, openMenu } from "./menu";
 import type { MenuItem } from "./menu";
 import { parseCsv } from "@/core/wirelist";
 import { TITLE_ROW } from "@/render/tables";
+import { openConnectorBody } from "./body";
 import { editOnSheet } from "./sheet-edit";
+import type { SchematicMenuTarget } from "./schematic";
 import type { AppContext } from "@/app/context";
 import type { EntityType, HarnessDoc, Point, Selection } from "@/core/types";
 
@@ -106,6 +111,60 @@ function itemsForTarget(app: AppContext, target: Selection, world: Point, cell?:
   }
 }
 
+/* ============================ schematic ============================ */
+
+/**
+ * The right-click menu of the schematic for what is not a wire: the background
+ * offers the view, a connector offers its body and to be deleted, and a splice
+ * offers to be deleted.
+ */
+export function schematicMenuItems(app: AppContext, target: SchematicMenuTarget): MenuItem[] {
+  const t = app.t;
+  if (target.kind === "background") {
+    return [{ label: t("menu.zoomToFit"), shortcut: "F", run: () => app.schematic.fitView() }];
+  }
+  const node = target.nodeId ? findNode(app.doc, target.nodeId) : undefined;
+  const splice = node?.style === "splice";
+  const items: MenuItem[] = [{ header: target.name }];
+  if (node && isMultiPin(node)) {
+    items.push({ label: t("menu.connectorBody"), run: () => openConnectorBody(app, node.id) });
+    items.push({ separator: true });
+  }
+  items.push({
+    label: t(splice ? "menu.deleteSplice" : "menu.deleteConnector"),
+    danger: true,
+    run: () => void deleteConnectorFlow(app, target.name, target.nodeId, splice),
+  });
+  return items;
+}
+
+/**
+ * Deleting a connector disconnects its wires, deletes its table and takes it
+ * off the sheet, so it is asked about first. One undo step brings it all back.
+ */
+async function deleteConnectorFlow(
+  app: AppContext,
+  name: string,
+  nodeId: string | undefined,
+  splice: boolean,
+): Promise<void> {
+  const wires = connectionCount(app.doc, name);
+  const ok = await app.dialogs.confirm({
+    title: app.t(splice ? "dialog.deleteSplice.title" : "dialog.deleteConnector.title", { name }),
+    body: app.t(wires ? "dialog.deleteConnector.bodyWires" : "dialog.deleteConnector.body", {
+      name,
+      n: wires,
+    }),
+    confirmLabel: app.t("props.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  editDoc(app, (doc) => void deleteConnector(doc, name, nodeId), "delete-connector");
+  app.store.select(null);
+  app.schematic.focusedWire = null;
+  app.schematic.requestRedraw();
+}
+
 /* ============================ node ============================ */
 
 function nodeItems(app: AppContext, id: string): MenuItem[] {
@@ -170,6 +229,12 @@ function nodeItems(app: AppContext, id: string): MenuItem[] {
           },
         ),
     });
+
+    const self = findNode(app.doc, id);
+    // the body of a connector with several cavities: what to order it by
+    if (self && isMultiPin(self)) {
+      items.push({ label: t("menu.connectorBody"), run: () => openConnectorBody(app, id) });
+    }
 
     const linked = tableForNode(app.doc, id);
     if (linked) {
@@ -261,6 +326,7 @@ function setConnectorStyle(app: AppContext, id: string, style: string): void {
       node.kind = "connector";
       node.style = style;
       if (!node.name && style !== "none") node.name = nextName(doc, style === "splice" ? "S" : "C");
+      applyBodyDefault(node, doc.defaults);
     },
     "connector-style",
   );
@@ -295,7 +361,7 @@ function createCavityTable(app: AppContext, id: string): void {
     (doc) => {
       const node = findNode(doc, id);
       if (!node) return;
-      const table = cavityTableFor(app.t, node);
+      const table = cavityTableFor(app.t, node, app.doc.wireUnit);
       table.x = snapTo(table.x, app.store.snapEnabled);
       table.y = snapTo(table.y, app.store.snapEnabled);
       doc.tables.push(table);
@@ -765,7 +831,7 @@ function addCavityTableAt(app: AppContext, world: Point): void {
   const changed = editDoc(
     app,
     (doc) => {
-      const table = cavityTable(app.t, snapTo(world.x, snap), snapTo(world.y, snap));
+      const table = cavityTable(app.t, snapTo(world.x, snap), snapTo(world.y, snap), undefined, doc.wireUnit);
       doc.tables.push(table);
       created = table.id;
     },
