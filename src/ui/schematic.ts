@@ -17,7 +17,7 @@ import { connectEnds, disconnectWire, moveWireEnd } from "@/core/rewire";
 import type { RewireOutcome } from "@/core/rewire";
 import type { Store } from "@/core/store";
 import type { Point, Selection } from "@/core/types";
-import { pinOffset, targetAt, targetLabel } from "@/core/schematic";
+import { portOffset, targetAt, targetLabel } from "@/core/schematic";
 import type { SchemBox, SchemTarget, SchemWire } from "@/core/schematic";
 import { setWireColor } from "@/core/wirecolor";
 import { t } from "@/i18n";
@@ -158,15 +158,16 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
       const box = model.byName.get(portEl.getAttribute("data-id") ?? "");
       const pin = Number(portEl.getAttribute("data-pin"));
       const cavity = box?.pins[pin];
-      if (!box || !cavity) return false;
+      // a cavity, or a box that has none and is joined to as a whole
+      if (!box || (pin >= 0 ? !cavity : box.pins.length > 0)) return false;
       const right = portEl.getAttribute("data-x") !== "0";
       wireDrag = {
         pointerId: ev.pointerId,
-        fixed: { x: right ? box.x + box.w : box.x, y: box.y + pinOffset(pin) },
+        fixed: { x: right ? box.x + box.w : box.x, y: box.y + portOffset(box, pin) },
         sx: ev.clientX,
         sy: ev.clientY,
         live: false,
-        op: { kind: "new", from: `${box.id}.${cavity.cavity}` },
+        op: { kind: "new", from: cavity ? `${box.id}.${cavity.cavity}` : box.id },
       };
       svg.setPointerCapture(ev.pointerId);
       return true;
