@@ -15,6 +15,22 @@ export type NodeKind = "junction" | "connector";
  */
 export type ConnectorStyle = "plug" | "ring" | "faston" | "pin" | "splice" | "none" | (string & {});
 
+/** Whether a connector body is the side that carries the pins or the side that carries the sockets. */
+export type BodyForm = "" | "plug" | "receptacle";
+
+/**
+ * What a multi-pin connector physically is. It is kept on the connector
+ * whatever its symbol is changed to, so that switching a connector to a
+ * terminal and back never loses it.
+ */
+export interface ConnectorBody {
+  form: BodyForm;
+  manufacturer: string;
+  series: string;
+  description: string;
+  partNumber: string;
+}
+
 export interface HNode {
   id: string;
   x: number;
@@ -43,6 +59,8 @@ export interface HNode {
    * the cable leaves it along that axis.
    */
   facing?: "right" | "left" | "up" | "down";
+  /** Plug or receptacle, maker, series, description and part number. Only meaningful on a multi-pin connector. */
+  body?: ConnectorBody;
 }
 
 export interface Segment {

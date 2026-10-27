@@ -11,10 +11,14 @@
  * element of the document — it is what two cavity tables say between them — so
  * it is held by the schematic renderer and read back by the sheet.
  */
+import { cloneDoc } from "@/core/doc";
 import { snapTo } from "@/core/geometry";
+import { connectEnds, moveWireEnd } from "@/core/rewire";
+import type { RewireOutcome } from "@/core/rewire";
 import type { Store } from "@/core/store";
 import type { Point, Selection } from "@/core/types";
-import type { SchemBox, SchemWire } from "@/core/schematic";
+import { pinOffset, targetAt, targetLabel } from "@/core/schematic";
+import type { SchemBox, SchemTarget, SchemWire } from "@/core/schematic";
 import { setWireColor } from "@/core/wirecolor";
 import { t } from "@/i18n";
 import type { SchematicRenderer } from "@/render/schematic";
@@ -35,6 +39,22 @@ interface BoxDrag {
   sx: number;
   sy: number;
   live: boolean;
+}
+
+/**
+ * A wire in hand: picked up by an end that is already on a cavity (it moves),
+ * or started from a cavity that has no wire (it is new). Either way the other
+ * end is what has to be dropped on a cavity.
+ */
+interface WireDrag {
+  pointerId: number;
+  /** the point the line is drawn from: the end that stays, or the cavity it starts at */
+  fixed: Point;
+  sx: number;
+  sy: number;
+  live: boolean;
+  /** what is being done, with the endpoints as the tables write them */
+  op: { kind: "move"; wire: SchemWire; moving: 0 | 1 } | { kind: "new"; from: string };
 }
 
 interface PanState {
@@ -60,6 +80,7 @@ export interface SchematicInteractionOptions {
 export function attachSchematicInteraction(opts: SchematicInteractionOptions): () => void {
   const { store, schematic, svg } = opts;
   let drag: BoxDrag | null = null;
+  let wireDrag: WireDrag | null = null;
   let pan: PanState | null = null;
   let lastClick = { time: 0, x: 0, y: 0 };
 
@@ -92,8 +113,128 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     }
   };
 
+  /** The two endpoints of a wire as the tables write them, in the order a move names them. */
+  const endsOf = (wire: SchemWire): [string, string] => [wire.fromLabel, wire.toLabel];
+
+  /** Does the drawing take this wire? Tried on a copy, so the answer is the real one. */
+  const outcomeOf = (op: WireDrag["op"], to: string): RewireOutcome => {
+    const copy = cloneDoc(store.doc);
+    return op.kind === "move"
+      ? moveWireEnd(copy, endsOf(op.wire), op.moving, to)
+      : connectEnds(copy, op.from, to);
+  };
+
+  const clearGhost = (): void => {
+    if (!schematic.ghost) return;
+    schematic.ghost = null;
+    schematic.requestRedraw();
+  };
+
+  /** Picks up a wire by one of its ends, or starts one from a free cavity. */
+  const startWireDrag = (ev: PointerEvent): boolean => {
+    if (ev.button !== 0 || !(ev.target instanceof Element)) return false;
+    const model = schematic.model();
+
+    const endEl = ev.target.closest('[data-sch="end"]');
+    if (endEl) {
+      const wire = model.wires.find((w) => w.id === endEl.getAttribute("data-wire"));
+      const moving = endEl.getAttribute("data-end") === "1" ? 1 : 0;
+      const fixed = wire?.points[moving === 0 ? wire.points.length - 1 : 0];
+      if (!wire || !fixed) return false;
+      wireDrag = {
+        pointerId: ev.pointerId,
+        fixed,
+        sx: ev.clientX,
+        sy: ev.clientY,
+        live: false,
+        op: { kind: "move", wire, moving },
+      };
+      svg.setPointerCapture(ev.pointerId);
+      return true;
+    }
+
+    const portEl = ev.target.closest('[data-sch="port"]');
+    if (portEl) {
+      const box = model.byName.get(portEl.getAttribute("data-id") ?? "");
+      const pin = Number(portEl.getAttribute("data-pin"));
+      const cavity = box?.pins[pin];
+      if (!box || !cavity) return false;
+      const right = portEl.getAttribute("data-x") !== "0";
+      wireDrag = {
+        pointerId: ev.pointerId,
+        fixed: { x: right ? box.x + box.w : box.x, y: box.y + pinOffset(pin) },
+        sx: ev.clientX,
+        sy: ev.clientY,
+        live: false,
+        op: { kind: "new", from: `${box.id}.${cavity.cavity}` },
+      };
+      svg.setPointerCapture(ev.pointerId);
+      return true;
+    }
+    return false;
+  };
+
+  /** Follows the wire in hand: the line, and whether the cavity under it would take it. */
+  const moveWireDrag = (ev: PointerEvent, d: WireDrag): void => {
+    if (!d.live) {
+      if (
+        Math.abs(ev.clientX - d.sx) < DRAG_THRESHOLD_PX &&
+        Math.abs(ev.clientY - d.sy) < DRAG_THRESHOLD_PX
+      ) {
+        return;
+      }
+      d.live = true;
+      focusWire(d.op.kind === "move" ? d.op.wire.id : null);
+    }
+    const at = schematic.screenToWorld(ev);
+    const target: SchemTarget | null = targetAt(schematic.model(), at);
+    // asked of the drawing itself, on a copy, so the colour says what a drop would really do
+    const hot = target
+      ? { box: target.box.id, pin: target.pin, ok: outcomeOf(d.op, targetLabel(target)).ok }
+      : null;
+    schematic.ghost = { from: d.fixed, to: at, hot };
+    schematic.requestRedraw();
+  };
+
+  /** Drops the wire: on a cavity it is written into the tables, anywhere else it is let go. */
+  const dropWire = (ev: PointerEvent, d: WireDrag): void => {
+    clearGhost();
+    if (!d.live) {
+      // never moved: a click on the end of a wire is a click on the wire
+      if (d.op.kind === "move") focusWire(d.op.wire.id);
+      return;
+    }
+    const target = targetAt(schematic.model(), schematic.screenToWorld(ev));
+    if (!target) return;
+    const to = targetLabel(target);
+
+    let outcome = { ok: false, reason: "no-end" } as RewireOutcome;
+    store.edit((doc) => {
+      outcome =
+        d.op.kind === "move"
+          ? moveWireEnd(doc, endsOf(d.op.wire), d.op.moving, to)
+          : connectEnds(doc, d.op.from, to);
+    }, "rewire");
+
+    if (!outcome.ok) {
+      if (outcome.reason === "unchanged") return;
+      const other = outcome.reason === "occupied" ? outcome.other : "";
+      opts.notify?.(t(`toast.rewire.${outcome.reason}`, { to, other }));
+      return;
+    }
+    const kept = d.op.kind === "move" ? endsOf(d.op.wire)[d.op.moving === 0 ? 1 : 0] : d.op.from;
+    const made = schematic
+      .model()
+      .wires.find(
+        (w) => (w.fromLabel === kept && w.toLabel === to) || (w.fromLabel === to && w.toLabel === kept),
+      );
+    focusWire(made?.id ?? null);
+    opts.notify?.(t(d.op.kind === "move" ? "toast.rewire.moved" : "toast.rewire.made", { from: kept, to }));
+  };
+
   const onPointerDown = (ev: PointerEvent): void => {
     if (ev.button !== 0 && ev.button !== 1) return;
+    if (startWireDrag(ev)) return;
     const at = schematic.screenToWorld(ev);
 
     const now = ev.timeStamp;
@@ -148,6 +289,10 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
   };
 
   const onPointerMove = (ev: PointerEvent): void => {
+    if (wireDrag && wireDrag.pointerId === ev.pointerId) {
+      moveWireDrag(ev, wireDrag);
+      return;
+    }
     if (pan && pan.pointerId === ev.pointerId) {
       schematic.setPan(pan.vx + (ev.clientX - pan.sx), pan.vy + (ev.clientY - pan.sy));
       return;
@@ -176,6 +321,12 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
   };
 
   const endPointer = (ev: PointerEvent, aborted: boolean): void => {
+    if (wireDrag && wireDrag.pointerId === ev.pointerId) {
+      const held = wireDrag;
+      wireDrag = null;
+      if (aborted) clearGhost();
+      else dropWire(ev, held);
+    }
     if (pan && pan.pointerId === ev.pointerId) pan = null;
     if (drag && drag.pointerId === ev.pointerId) {
       if (drag.live) {
@@ -232,6 +383,12 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     if (drag?.live) store.cancelLive();
     drag = null;
     pan = null;
+    if (wireDrag) clearGhost();
+    wireDrag = null;
+  };
+  // Escape puts a wire in hand back where it was
+  const onKeyDown = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape" && wireDrag) cancelGestures();
   };
 
   svg.addEventListener("pointerdown", onPointerDown);
@@ -241,9 +398,11 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
   svg.addEventListener("contextmenu", onContextMenu);
   svg.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("blur", cancelGestures);
+  window.addEventListener("keydown", onKeyDown);
   document.addEventListener("pointerup", onPointerUp);
 
   return () => {
+    window.removeEventListener("keydown", onKeyDown);
     svg.removeEventListener("pointerdown", onPointerDown);
     svg.removeEventListener("pointermove", onPointerMove);
     svg.removeEventListener("pointerup", onPointerUp);

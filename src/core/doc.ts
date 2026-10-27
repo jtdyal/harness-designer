@@ -1,5 +1,6 @@
 import { DOC_VERSION } from "./types";
 import type { DocMeta, HarnessDoc, HNode, Inline, Point, Segment, Table } from "./types";
+import { normalizeBody } from "./connectorbody";
 import { seedIds, uid } from "./ids";
 import { T_MAX, T_MIN, alongPolyline, clamp, dist, polylineLength, projectPolyline } from "./geometry";
 
@@ -100,6 +101,9 @@ export function normalizeDoc(input: unknown): HarnessDoc {
     const mate = str(src.mate);
     if (mate && mate !== id) node.mate = mate;
     if ((FACINGS as readonly string[]).includes(str(src.facing))) node.facing = src.facing;
+    // kept whatever the style is: a body outlives a change of symbol
+    const body = normalizeBody(src.body);
+    if (body) node.body = body;
     doc.nodes.push(node);
   }
   normalizeMates(doc);
@@ -484,7 +488,7 @@ export function tableColumns(t: Table): TableColumns {
     if (idx.color === undefined && /^(colore|color|colour)$/.test(s)) idx.color = i;
     if (idx.section === undefined && /(sezione|section|gauge|awg|mm²|mm2)/.test(s)) idx.section = i;
     if (idx.func === undefined && /(funzione|function|circuito|circuit|signal)/.test(s)) idx.func = i;
-    if (idx.type === undefined && /^(type|tipo)$/.test(s)) idx.type = i;
+    if (idx.type === undefined && /^(wire[ -]?type|type|tipo( filo)?)$/.test(s)) idx.type = i;
   });
 
   if (idx.cavity === undefined) {

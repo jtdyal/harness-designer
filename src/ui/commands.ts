@@ -8,7 +8,8 @@
  * posto: `matchShortcut`.
  */
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
-import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
+import { isMultiPin } from "@/core/connectorbody";
+import { deleteEntity, emptyDoc, findNode, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
 import { addTypeColumn } from "@/core/typecolumn";
 import { setWireUnit, unitLabel } from "@/core/wiresize";
@@ -27,6 +28,7 @@ import { wireListRows } from "@/core/wirelist";
 import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
 import { tableSize } from "@/render/tables";
+import { openConnectorBody } from "@/ui/body";
 import { openFind } from "@/ui/find";
 import { openCommandPalette } from "@/ui/palette";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
@@ -549,6 +551,17 @@ export function registerBuiltinCommands(app: AppContext): void {
       },
     },
 
+    {
+      id: "node.body",
+      titleKey: "cmd.connectorBody",
+      run: (a) => {
+        const picked = a.store.selection;
+        const node = picked?.type === "node" ? findNode(a.doc, picked.id) : undefined;
+        if (!node || !isMultiPin(node) || !openConnectorBody(a, node.id)) {
+          a.toast.error(a.t("toast.bodyNeedsConnector"));
+        }
+      },
+    },
     {
       id: "doc.unitMm2",
       titleKey: "cmd.unitMm2",
