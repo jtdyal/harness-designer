@@ -185,10 +185,40 @@ export interface PluginHostApi {
  */
 export type SidebarSection = (container: HTMLElement, selection: Selection | null, app: AppContext) => void;
 
+/* ---------------- file on disk ---------------- */
+
+/**
+ * The file the drawing is linked to, where the browser allows linking one.
+ *
+ * Linked, every edit is written to it as it is made, and the file is watched
+ * for changes made by anything else. Unlinked (a new drawing, the sample, a
+ * browser without the File System Access API) the drawing only lives in the
+ * browser's own storage and saving is a download, as it always was.
+ */
+export interface FileApi {
+  /** a file on disk is linked to the drawing */
+  readonly attached: boolean;
+  readonly name: string | null;
+  /** edits reach the file as they are made */
+  readonly autosaving: boolean;
+  /** something else changed the file since this window last read it */
+  readonly stale: boolean;
+  /** called whenever any of the above changes; returns the unsubscribe */
+  onChange(fn: () => void): () => void;
+  open(): Promise<void>;
+  save(): Promise<void>;
+  saveAs(): Promise<void>;
+  /** reads the file again, replacing the drawing (one undo step) */
+  reload(): Promise<void>;
+  /** unlinks the file, before the drawing is replaced by something unrelated */
+  detach(): void;
+}
+
 /* ---------------- application context ---------------- */
 
 export interface AppContext {
   store: Store;
+  file: FileApi;
   renderer: RendererApi;
   schematic: SchematicApi;
   t: Translate;
