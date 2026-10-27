@@ -452,6 +452,31 @@ export const it = {
   "toast.storageFull": "Salvataggio automatico non riuscito: spazio del browser esaurito. Salva su file.",
   "toast.storageOff": "Salvataggio automatico non disponibile in questo browser. Salva su file.",
   "toast.otherTab": "Questo schema è aperto anche in un'altra scheda: l'ultimo salvataggio automatico vince.",
+
+  /* ---------------- file su disco ---------------- */
+  "topbar.saveAs": "Salva con nome…",
+  "topbar.reload": "Ricarica",
+  "topbar.reload.tip": "Rilegge il file dal disco (Ctrl+Z annulla)",
+  "topbar.reload.stale": "Il file è cambiato sul disco: clicca per caricare le modifiche",
+  "topbar.reload.none": "Ricaricare richiede un file: usa prima Apri o Salva",
+  "topbar.file.none": "Nessun file",
+  "topbar.file.none.tip":
+    "Il salvataggio automatico tiene solo una copia in questo browser. Apri o Salva per collegare un file su disco e ogni modifica vi verrà scritta.",
+  "topbar.file.linked.tip": "Ogni modifica viene salvata automaticamente su {name}",
+  "topbar.file.readonly.tip":
+    "L'accesso in scrittura a {name} è stato negato: le modifiche non vengono salvate",
+  "toast.openedFile": "Aperto {name}: le modifiche vi vengono salvate automaticamente",
+  "toast.savedFile": "Salvato su {name}: le modifiche vi vengono salvate automaticamente",
+  "toast.reloaded": "Ricaricato {name} (Ctrl+Z annulla)",
+  "toast.fileChanged":
+    "Il file è cambiato sul disco. Il salvataggio automatico è in pausa: Ricarica per prendere le modifiche, oppure Salva per sovrascriverle.",
+  "toast.autosaveFailed": "Impossibile scrivere sul file. Usa Salva per riprovare.",
+  "dialog.overwrite.title": "Sovrascrivere il file?",
+  "dialog.overwrite.body":
+    "{name} è stato modificato fuori da questa finestra dopo l'ultima lettura. Salvando, quelle modifiche vengono sostituite con ciò che è sullo schermo.",
+  "dialog.overwrite.confirm": "Sovrascrivi",
+  "cmd.saveAs": "Salva con nome…",
+  "cmd.reload": "Ricarica il file dal disco",
   "toast.pluginLoaded": "Plugin «{name}» caricato",
   "toast.pluginFailed": "Plugin «{name}» non caricato: {error}",
   "toast.offlineReady": "Applicazione disponibile anche offline",
