@@ -66,6 +66,11 @@ All notable changes to this project are documented here. The format follows
   table and takes it off the sheet, after asking, as one undo step.
 - **Wires can start from a splice** (or any connector with no cavities) in the
   schematic: hover it and drag from the dot on either side onto a cavity.
+- **Defaults** in the bar: wire size, wire type, wire colour and connector body.
+  A wire starts from them when it is connected, in the schematic or by typing a
+  destination in a table, and a connector gets the body when it is drawn as a
+  plug. They only fill empty cells, are saved with the drawing, and the size
+  follows a change of unit.
 
 ## [1.2.0]
 
