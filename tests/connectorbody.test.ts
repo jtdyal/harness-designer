@@ -120,7 +120,7 @@ describe("bodyLibrary", () => {
     const parts = bodyLibrary(docWith(), [])
       .filter((b) => b.series === "DTM" && b.form === "plug")
       .map((b) => b.partNumber);
-    expect(parts).toEqual(["DTM04-2P", "DTM04-3P", "DTM04-4P", "DTM04-6P", "DTM04-8P", "DTM04-12PA"]);
+    expect(parts).toEqual(["DTM04-2P", "DTM04-3P", "DTM04-4P", "DTM04-6P", "DTM04-08PA", "DTM04-12PA"]);
   });
 
   it("tells a plug from a receptacle of the same part", () => {
