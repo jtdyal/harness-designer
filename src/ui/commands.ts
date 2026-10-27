@@ -28,6 +28,7 @@ import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
 import { saveDocToFile } from "@/io/file";
 import { tableSize } from "@/render/tables";
+import { openDefaults } from "@/ui/defaults";
 import { openCommandPalette } from "@/ui/palette";
 import { separateOverlaps, separateTables } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
@@ -556,6 +557,11 @@ export function registerBuiltinCommands(app: AppContext): void {
       },
     },
 
+    {
+      id: "doc.defaults",
+      titleKey: "cmd.defaults",
+      run: (a) => openDefaults(a),
+    },
     {
       id: "doc.unitMm2",
       titleKey: "cmd.unitMm2",
