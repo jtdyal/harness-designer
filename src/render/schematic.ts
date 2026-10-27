@@ -12,6 +12,7 @@
  * wire costs a walk of the harness graph, and a pan must not pay for it.
  */
 import { colorsOf } from "@/core/colors";
+import { bodyLabel } from "@/core/connectorbody";
 import {
   buildSchematic,
   boardHighlight,
@@ -230,6 +231,9 @@ export class SchematicRenderer {
       },
       parent,
     );
+
+    const body = this.store.doc.nodes.find((n) => n.id === box.nodeId)?.body;
+    if (body) el("title", {}, g).textContent = bodyLabel(body);
 
     el(
       "rect",

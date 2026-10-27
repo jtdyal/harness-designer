@@ -30,6 +30,7 @@ import {
   tableForNode,
   isAutoLinkEnabled,
 } from "@/core/doc";
+import { isMultiPin } from "@/core/connectorbody";
 import { cavityTable, cavityTableFor } from "@/core/factories";
 import { projectT, snapTo } from "@/core/geometry";
 import { visibleConnectorSymbols } from "@/render/connectors";
@@ -39,6 +40,7 @@ import { menuContributors, openMenu } from "./menu";
 import type { MenuItem } from "./menu";
 import { parseCsv } from "@/core/wirelist";
 import { TITLE_ROW } from "@/render/tables";
+import { openConnectorBody } from "./body";
 import { editOnSheet } from "./sheet-edit";
 import type { AppContext } from "@/app/context";
 import type { EntityType, HarnessDoc, Point, Selection } from "@/core/types";
@@ -170,6 +172,12 @@ function nodeItems(app: AppContext, id: string): MenuItem[] {
           },
         ),
     });
+
+    const self = findNode(app.doc, id);
+    // the body of a connector with several cavities: what to order it by
+    if (self && isMultiPin(self)) {
+      items.push({ label: t("menu.connectorBody"), run: () => openConnectorBody(app, id) });
+    }
 
     const linked = tableForNode(app.doc, id);
     if (linked) {

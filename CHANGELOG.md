@@ -41,6 +41,14 @@ All notable changes to this project are documented here. The format follows
   cell, with _Other type…_ and _Clear type_. The Type column is now headed
   _Wire type_ (older drawings keep _Type_, which is still recognised), and the
   type, like colour and size, is brought into step at the far end of the wire.
+- **Connector body** for multi-pin connectors: plug or receptacle, manufacturer,
+  series, description and part number, set from the connector's right-click menu
+  (_Connector body…_) or the command palette. The list starts with the DEUTSCH
+  DTM plugs and receptacles and the Metri-Pack series, and every body used is
+  offered from then on, from the drawing and from other drawings. The body is
+  kept on the connector when it is drawn as a terminal or a splice, and comes
+  back when it is drawn as a plug again. It is shown under the connector's name
+  on the sheet and as the tooltip of its box in the schematic.
 
 ## [1.2.0]
 
