@@ -32,6 +32,7 @@ import {
 } from "@/core/doc";
 import { isMultiPin } from "@/core/connectorbody";
 import { connectionCount, deleteConnector } from "@/core/rewire";
+import { applyBodyDefault } from "@/core/defaults";
 import { cavityTable, cavityTableFor } from "@/core/factories";
 import { projectT, snapTo } from "@/core/geometry";
 import { visibleConnectorSymbols } from "@/render/connectors";
@@ -325,6 +326,7 @@ function setConnectorStyle(app: AppContext, id: string, style: string): void {
       node.kind = "connector";
       node.style = style;
       if (!node.name && style !== "none") node.name = nextName(doc, style === "splice" ? "S" : "C");
+      applyBodyDefault(node, doc.defaults);
     },
     "connector-style",
   );
