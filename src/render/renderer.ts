@@ -1,5 +1,6 @@
 import type { RendererApi } from "@/app/context";
 import { colorOf, isLightColor } from "@/core/colors";
+import { bodyCaption, isMultiPin } from "@/core/connectorbody";
 import {
   FACINGS,
   branchDirection,
@@ -700,6 +701,25 @@ export class Renderer implements RendererApi {
       },
       parent,
     );
+
+    // what the connector is, under its name: only while it is drawn as a
+    // multi-pin connector, though the body stays on the node whatever it is drawn as
+    if (node.body && isMultiPin(node)) {
+      text(
+        at.x,
+        at.y + 17,
+        bodyCaption(node.body),
+        {
+          "font-size": 10.5,
+          fill: palette().textDim,
+          "text-anchor": "middle",
+          "data-ent": "node",
+          "data-id": node.id,
+          style: "cursor:move",
+        },
+        parent,
+      );
+    }
   }
 
   /* ---------------- labels on the branch ---------------- */

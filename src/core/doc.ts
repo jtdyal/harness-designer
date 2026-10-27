@@ -1,5 +1,6 @@
 import { DOC_VERSION } from "./types";
 import type { DocMeta, HarnessDoc, HNode, Inline, Point, Segment, Table } from "./types";
+import { normalizeBody } from "./connectorbody";
 import { seedIds, uid } from "./ids";
 import { T_MAX, T_MIN, alongPolyline, clamp, dist, polylineLength, projectPolyline } from "./geometry";
 
@@ -100,6 +101,9 @@ export function normalizeDoc(input: unknown): HarnessDoc {
     const mate = str(src.mate);
     if (mate && mate !== id) node.mate = mate;
     if ((FACINGS as readonly string[]).includes(str(src.facing))) node.facing = src.facing;
+    // kept whatever the style is: a body outlives a change of symbol
+    const body = normalizeBody(src.body);
+    if (body) node.body = body;
     doc.nodes.push(node);
   }
   normalizeMates(doc);
