@@ -27,7 +27,7 @@ import { clamp } from "@/core/geometry";
 import type { Store } from "@/core/store";
 import type { Point, Rect, Viewport } from "@/core/types";
 import type { Translate } from "@/i18n";
-import { palette } from "./palette";
+import { palette, wireHalo } from "./palette";
 import { sameView } from "./renderer";
 import { el, ellipsize, text, textWidth } from "./svg";
 import { filletedPath } from "./wires";
@@ -406,6 +406,32 @@ export class SchematicRenderer {
       ends.map((e) => e.at),
       g,
     );
+    // a box with no cavities is one electrical point, and a wire can start from
+    // it on either side; the handles of the wires already on it are drawn after
+    // these, so they win where the two meet
+    if (!box.pins.length) {
+      const y = portOffset(box, -1);
+      for (const x of [0, box.w]) {
+        el(
+          "circle",
+          {
+            class: "sch-port",
+            cx: x,
+            cy: y,
+            r: 4.5,
+            fill: palette().tableBg,
+            stroke: palette().selection,
+            "stroke-width": 1.6,
+            "data-sch": "port",
+            "data-id": box.id,
+            "data-pin": -1,
+            "data-x": x,
+            style: "cursor:crosshair",
+          },
+          g,
+        );
+      }
+    }
     for (const end of ends) {
       const cx = end.at.x - box.x;
       const cy = end.at.y - box.y;
@@ -598,6 +624,21 @@ export class SchematicRenderer {
       el(
         "path",
         { ...shape, stroke: palette().selection, "stroke-width": WIRE_W + 5, opacity: 0.45 },
+        parent,
+      );
+    }
+    // a black wire on the dark sheet is outlined, or it cannot be followed
+    const halo = wireHalo(base);
+    if (halo) {
+      el(
+        "path",
+        {
+          ...shape,
+          stroke: halo,
+          "stroke-width": WIRE_W + 2.6,
+          opacity: dimmed ? 0.12 : 0.85,
+          "pointer-events": "none",
+        },
         parent,
       );
     }

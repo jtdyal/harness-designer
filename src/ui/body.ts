@@ -16,6 +16,7 @@ import {
   isMultiPin,
   normalizeBody,
 } from "@/core/connectorbody";
+import { setDefaultBody } from "@/core/defaults";
 import { findNode } from "@/core/doc";
 import type { BodyForm, ConnectorBody } from "@/core/types";
 import { loadSavedBodies, rememberBody } from "./bodylibrary";
@@ -24,7 +25,8 @@ import { closePanel, openPanel } from "./panel";
 const PANEL_ID = "body";
 
 /** What is being edited: the connector, and the fields as they stand before Apply. */
-let editing: { node: string; draft: ConnectorBody } = { node: "", draft: emptyBody() };
+/** `node` is null while the default body is being edited. */
+let editing: { node: string | null; draft: ConnectorBody } = { node: null, draft: emptyBody() };
 
 function field(label: string, control: HTMLElement): HTMLElement {
   const wrap = document.createElement("label");
@@ -72,11 +74,12 @@ function action(label: string, onClick: () => void, variant: "primary" | "outlin
 function render(app: AppContext, body: HTMLElement): void {
   const { t } = app;
   body.replaceChildren();
-  const node = findNode(app.doc, editing.node);
-  if (!node) {
+  const node = editing.node === null ? undefined : findNode(app.doc, editing.node);
+  if (editing.node !== null && !node) {
     closePanel(PANEL_ID);
     return;
   }
+  const current = node ? node.body : app.doc.defaults?.body;
   const { draft } = editing;
   const library = bodyLibrary(app.doc, loadSavedBodies());
 
@@ -149,7 +152,7 @@ function render(app: AppContext, body: HTMLElement): void {
     field(t("body.partNumber"), keys(input(draft.partNumber, null, (v) => (editing.draft.partNumber = v)))),
   );
 
-  if (!isMultiPin(node)) {
+  if (node && !isMultiPin(node)) {
     const hint = document.createElement("p");
     hint.className = "small muted";
     hint.textContent = t("body.hint.hidden");
@@ -160,7 +163,7 @@ function render(app: AppContext, body: HTMLElement): void {
   buttons.className = "stack";
   buttons.append(
     action(t("body.apply"), submit, "primary"),
-    action(t("body.remove"), () => remove(app), "outline", !node.body),
+    action(t("body.remove"), () => remove(app), "outline", !current),
   );
   body.append(buttons);
 }
@@ -169,21 +172,42 @@ function render(app: AppContext, body: HTMLElement): void {
 function apply(app: AppContext): void {
   const body = normalizeBody(editing.draft);
   const id = editing.node;
-  const name = findNode(app.doc, id)?.name ?? "";
-  app.store.edit((doc) => {
-    const node = findNode(doc, id);
-    if (!node) return;
-    if (body) node.body = body;
-    else delete node.body;
-  }, "body");
+  const name = id === null ? "" : (findNode(app.doc, id)?.name ?? "");
+  app.store.edit(
+    (doc) => {
+      if (id === null) {
+        setDefaultBody(doc, body);
+        return;
+      }
+      const node = findNode(doc, id);
+      if (!node) return;
+      if (body) node.body = body;
+      else delete node.body;
+    },
+    id === null ? "defaults" : "body",
+  );
   if (body) rememberBody(body);
   closePanel(PANEL_ID);
-  app.toast.show(app.t(body ? "body.saved" : "body.removed", { name }));
+  const key =
+    id === null ? (body ? "body.defaultSet" : "body.defaultCleared") : body ? "body.saved" : "body.removed";
+  app.toast.show(app.t(key, { name }));
 }
 
 function remove(app: AppContext): void {
   editing.draft = emptyBody();
   apply(app);
+}
+
+/** Opens the panel for the body new multi-pin connectors start with. */
+export function openDefaultBody(app: AppContext): void {
+  editing = { node: null, draft: { ...(app.doc.defaults?.body ?? emptyBody()) } };
+  openPanel({
+    id: PANEL_ID,
+    title: app.t("body.title.defaults"),
+    width: 340,
+    dock: "top-right",
+    render: (body) => render(app, body),
+  });
 }
 
 /** Opens the panel for a connector. False when the node is not a connector. */

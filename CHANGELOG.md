@@ -60,6 +60,16 @@ All notable changes to this project are documented here. The format follows
 - **Delete wire**: right-click a wire in the schematic, or pick it and press
   Delete. Both cavities let go of it (colour, size and type go with it; function
   and notes stay), as one undo step.
+- **Wires can start from a splice** (or any connector with no cavities) in the
+  schematic: hover it and drag from the dot on either side onto a cavity.
+- **Black wires show in the dark theme.** A wire that is black or nearly so gets
+  a light edge, in the schematic and on the sheet, and no other colour is
+  touched. Export and print are unchanged.
+- **Defaults** in the bar: wire size, wire type, wire colour and connector body.
+  A wire starts from them when it is connected, in the schematic or by typing a
+  destination in a table, and a connector gets the body when it is drawn as a
+  plug. They only fill empty cells, are saved with the drawing, and the size
+  follows a change of unit.
 
 ## [1.2.0]
 
