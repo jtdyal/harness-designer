@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeDoc } from "@/core/doc";
 import { HEAD_H, PIN_H, buildSchematic, targetAt, targetLabel } from "@/core/schematic";
-import { connectEnds, endLabel, moveWireEnd, parseEnd } from "@/core/rewire";
+import { connectEnds, disconnectWire, endLabel, moveWireEnd, parseEnd } from "@/core/rewire";
 import type { HarnessDoc } from "@/core/types";
 
 const HEAD = ["Cavity", "To", "Function", "Colour", "Section", "Wire type"];
@@ -255,5 +255,41 @@ describe("targetAt", () => {
     const box = model.byName.get("S1");
     const hit = box && targetAt(model, { x: box.x + box.w / 2, y: box.y + box.h / 2 });
     expect(hit && targetLabel(hit)).toBe("S1");
+  });
+});
+
+describe("disconnectWire", () => {
+  it("lets go of the wire at both ends, taking its colour, size and type", () => {
+    const doc = harness();
+    expect(disconnectWire(doc, ["A.1", "B.1"])).toBe(2);
+    expect(rowOf(doc, "ta", "1")).toEqual(["1", "", "Power", "", "", ""]);
+    expect(rowOf(doc, "tb", "1")).toEqual(["1", "", "Power", "", "", ""]);
+  });
+
+  it("is gone from the schematic afterwards", () => {
+    const doc = harness();
+    disconnectWire(doc, ["A.1", "B.1"]);
+    expect(buildSchematic(doc).wires).toHaveLength(0);
+  });
+
+  it("clears the one end that has a row when the other is a splice", () => {
+    const doc = harness();
+    connectEnds(doc, "A.2", "S1");
+    expect(disconnectWire(doc, ["A.2", "S1"])).toBe(1);
+    expect(rowOf(doc, "ta", "2")[1]).toBe("");
+  });
+
+  it("does not clear a cavity that points at something else", () => {
+    const doc = harness();
+    const before = JSON.stringify(rowOf(doc, "tb", "1"));
+    expect(disconnectWire(doc, ["A.1", "C.3"])).toBe(0);
+    expect(JSON.stringify(rowOf(doc, "tb", "1"))).toBe(before);
+  });
+
+  it("can be put back by connecting the same ends", () => {
+    const doc = harness();
+    disconnectWire(doc, ["A.1", "B.1"]);
+    expect(connectEnds(doc, "A.1", "B.1")).toEqual({ ok: true });
+    expect(rowOf(doc, "tb", "1")[1]).toBe("A.1");
   });
 });

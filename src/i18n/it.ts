@@ -392,7 +392,7 @@ export const it = {
     "Mentre modifichi una cella: <b>Tab</b> passa alla successiva, <b>Invio</b> scende, <b>Esc</b> annulla.",
   "guide.branch": "<b>B</b> o tasto destro sul vuoto per disegnare un ramo; Esc per terminare.",
   "guide.rewire":
-    "<b>Nello schema</b>, trascina l'estremità di un filo su un'altra cavità o su un altro connettore per spostarlo lì, oppure trascina da una cavità libera (il punto compare passandoci sopra con il puntatore) su un'altra per fare un filo nuovo. Il contorno rosso indica che la cavità ha già un filo.",
+    "<b>Nello schema</b>, trascina l'estremità di un filo su un'altra cavità o su un altro connettore per spostarlo lì, oppure trascina da una cavità libera (il punto compare passandoci sopra con il puntatore) su un'altra per fare un filo nuovo. Il contorno rosso indica che la cavità ha già un filo. Seleziona un filo e premi <b>Canc</b>, o fai clic destro, per eliminarlo.",
   "guide.drag": "Trascina gli elementi per spostarli; trascina il vuoto per la vista, rotella per lo zoom.",
   "guide.copy": "<b>Ctrl+C</b> copia la selezione, <b>Ctrl+V</b> ne rimette una uguale dov'è il puntatore.",
   "guide.keys": "<b>Canc</b> elimina la selezione, <b>Ctrl+Z</b> annulla, <b>Ctrl+K</b> cerca un comando.",
@@ -537,6 +537,9 @@ export const it = {
     "Questo connettore è disegnato come un altro tipo di terminale, quindi il suo corpo non è mostrato. Resta memorizzato e ricompare quando torna a essere disegnato come spina.",
   "body.saved": "Corpo connettore impostato su {name}",
   "body.removed": "Corpo connettore rimosso da {name}",
+  "menu.wireDelete": "Elimina filo",
+  "toast.wireDeleted": "Filo {from} – {to} eliminato",
+  "toast.wireDeleteNone": "Questo filo non è più nelle tabelle",
   "menu.typeHeader": "Tipo di filo",
   "menu.typeOther": "Altro tipo…",
   "menu.typeClear": "Cancella tipo",

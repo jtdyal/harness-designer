@@ -156,6 +156,33 @@ export function connectEnds(doc: HarnessDoc, from: string, to: string): RewireOu
 }
 
 /**
+ * Takes a wire out: both cavities let go of it. Each end is cleared only if it
+ * really points at the other, so a table that disagrees about the wire is not
+ * made to lose a different one. The colour, size and type go with the wire; the
+ * function and notes describe the cavity and stay.
+ *
+ * Returns how many rows were cleared, zero when the tables hold no such wire.
+ */
+export function disconnectWire(doc: HarnessDoc, ends: readonly [string, string]): number {
+  const a = parseEnd(ends[0]);
+  const b = parseEnd(ends[1]);
+  if (!a || !b) return 0;
+  const tables = cavityTables(doc);
+  let cleared = 0;
+  for (const [mine, other] of [
+    [a, b],
+    [b, a],
+  ] as const) {
+    const row = rowOf(tables, mine);
+    if (row && destText(row) === endLabel(other)) {
+      clearEnd(row);
+      cleared++;
+    }
+  }
+  return cleared;
+}
+
+/**
  * Moves one end of a wire to another cavity, or another connector.
  *
  * `ends` are the wire's two endpoints as the tables write them and `moving` is
