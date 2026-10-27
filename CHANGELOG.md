@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Find and replace** (`Ctrl+F`, `Ctrl+H`) over the tables, connector names,
+  branch lengths, labels and title block. Matches are marked on the sheet,
+  match case and whole-cell options are offered, and Replace all is a single
+  undo step. Renaming a connector through it carries the new name into its table
+  and every reference to it.
+
 ## [1.2.0]
 
 ### Added
