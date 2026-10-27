@@ -495,6 +495,17 @@ export const it = {
   "find.refused": "Non sostituito: un connettore non può restare senza nome né prendere il nome di un altro.",
   "cmd.find": "Trova…",
   "cmd.replace": "Trova e sostituisci…",
+  "topbar.unit.tip":
+    "Unità di misura delle sezioni. Sceglierne un'altra converte tutte le sezioni del disegno",
+  "cmd.unitMm2": "Sezioni dei fili in mm²",
+  "cmd.unitAwg": "Sezioni dei fili in AWG",
+  "toast.wireUnit": "Le sezioni sono ora in {unit}: {n} convertite alla misura standard più vicina",
+  "toast.wireUnitSkipped":
+    "Le sezioni sono ora in {unit}: {n} convertite, {m} lasciate come scritte perché non sono sezioni",
+  "toast.wireUnitSet": "Le sezioni sono ora in {unit}",
+  "menu.sizeHeader": "Sezione del filo",
+  "menu.sizeOther": "Altra sezione…",
+  "menu.sizeClear": "Cancella sezione",
   "toast.pluginLoaded": "Plugin «{name}» caricato",
   "toast.pluginFailed": "Plugin «{name}» non caricato: {error}",
   "toast.offlineReady": "Applicazione disponibile anche offline",
