@@ -32,6 +32,14 @@ All notable changes to this project are documented here. The format follows
 - A **Type** column for cavity tables (`Type` or `Tipo`), present in new cavity
   tables, and _Insert → Type column in every cavity table_ to add it to existing
   drawings.
+- **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
+  other one converts every size in the drawing, as one undo step, to the nearest
+  standard size of the new scale, and heads the Section column of every table
+  (and the wire list) with the unit. Text that is not a size is left as typed.
+  The unit is saved with the drawing. Editing a Section cell opens the list of
+  standard sizes for the unit, each with its equivalent in the other, and
+  _Other size…_ for anything not on it. Converting is to the nearest standard
+  size, so going to AWG and back can land on a neighbouring size.
 
 ## [1.2.0]
 
