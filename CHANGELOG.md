@@ -40,6 +40,23 @@ All notable changes to this project are documented here. The format follows
   standard sizes for the unit, each with its equivalent in the other, and
   _Other size…_ for anything not on it. Converting is to the nearest standard
   size, so going to AWG and back can land on a neighbouring size.
+- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
+  cell, with _Other type…_ and _Clear type_. The Type column is now headed
+  _Wire type_ (older drawings keep _Type_, which is still recognised), and the
+  type, like colour and size, is brought into step at the far end of the wire.
+- **Connector body** for multi-pin connectors: plug or receptacle, manufacturer,
+  series, description and part number, set from the connector's right-click menu
+  (_Connector body…_) or the command palette. The list starts with the DEUTSCH
+  DTM plugs and receptacles and the Metri-Pack series, and every body used is
+  offered from then on, from the drawing and from other drawings. The body is
+  kept on the connector when it is drawn as a terminal or a splice, and comes
+  back when it is drawn as a plug again. It is shown under the connector's name
+  on the sheet and as the tooltip of its box in the schematic.
+- **Dragging wires in the schematic.** Drag the end of a wire onto another
+  cavity, or another connector, to move it there; drag from a free cavity onto
+  another to make a wire. The cavity under the pointer is outlined, in red when
+  it already has a wire. The cavity tables at both ends are rewritten as if
+  typed, the colour, size and type go with the wire, and it is one undo step.
 
 ## [1.2.0]
 
