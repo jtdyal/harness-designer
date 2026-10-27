@@ -21,6 +21,9 @@ All notable changes to this project are documented here. The format follows
   amber and autosave pauses rather than overwrite those changes. Save asks
   before overwriting a file changed from outside.
 - **Save as…** (`Ctrl+Shift+S`).
+- **Right click a wire in the schematic** to change its colour, with the same
+  standard colour picker the sheet uses. The colour is written into the cavity
+  tables at both ends of the wire.
 - **Find and replace** (`Ctrl+F`, `Ctrl+H`) over the tables, connector names,
   branch lengths, labels and title block. Matches are marked on the sheet,
   match case and whole-cell options are offered, and Replace all is a single
@@ -49,6 +52,16 @@ All notable changes to this project are documented here. The format follows
   kept on the connector when it is drawn as a terminal or a splice, and comes
   back when it is drawn as a plug again. It is shown under the connector's name
   on the sheet and as the tooltip of its box in the schematic.
+- **Dragging wires in the schematic.** Drag the end of a wire onto another
+  cavity, or another connector, to move it there; drag from a free cavity onto
+  another to make a wire. The cavity under the pointer is outlined, in red when
+  it already has a wire. The cavity tables at both ends are rewritten as if
+  typed, the colour, size and type go with the wire, and it is one undo step.
+- **Delete wire**: right-click a wire in the schematic, or pick it and press
+  Delete. Both cavities let go of it (colour, size and type go with it; function
+  and notes stay), as one undo step.
+- **Wires can start from a splice** (or any connector with no cavities) in the
+  schematic: hover it and drag from the dot on either side onto a cavity.
 
 ## [1.2.0]
 
