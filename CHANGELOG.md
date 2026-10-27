@@ -26,6 +26,14 @@ All notable changes to this project are documented here. The format follows
   match case and whole-cell options are offered, and Replace all is a single
   undo step. Renaming a connector through it carries the new name into its table
   and every reference to it.
+- **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
+  other one converts every size in the drawing, as one undo step, to the nearest
+  standard size of the new scale, and heads the Section column of every table
+  (and the wire list) with the unit. Text that is not a size is left as typed.
+  The unit is saved with the drawing. Editing a Section cell opens the list of
+  standard sizes for the unit, each with its equivalent in the other, and
+  _Other size…_ for anything not on it. Converting is to the nearest standard
+  size, so going to AWG and back can land on a neighbouring size.
 
 ## [1.2.0]
 
