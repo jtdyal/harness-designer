@@ -10,6 +10,7 @@
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
 import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
+import { addTypeColumn } from "@/core/typecolumn";
 import { previewUnitChange, setWireUnit, unitLabel } from "@/core/wiresize";
 import type { UnitChange } from "@/core/wiresize";
 import { copySelection, countOf, isEmptyClipping } from "@/core/clipboard";
@@ -28,7 +29,7 @@ import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/
 import { saveDocToFile } from "@/io/file";
 import { tableSize } from "@/render/tables";
 import { openCommandPalette } from "@/ui/palette";
-import { separateOverlaps } from "@/ui/separate";
+import { separateOverlaps, separateTables } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
 /* ============================ shortcuts ============================ */
@@ -571,6 +572,23 @@ export function registerBuiltinCommands(app: AppContext): void {
       id: "insert.cavity",
       titleKey: "cmd.insertCavity",
       run: (a) => insertTable(a, cavityTable(a.t, 0, 0, undefined, a.doc.wireUnit)),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        let moved = 0;
+        a.store.edit((doc) => {
+          const widened = addTypeColumn(doc, a.t("table.head.type"));
+          n = widened.length;
+          // the new column makes a table wider: one that now lies on its neighbour gives way
+          moved = separateTables(doc, a.renderer, a.store.snapEnabled, widened);
+        }, "type-column");
+        if (!n) a.toast.show(a.t("toast.typeColumnNone"));
+        else if (moved) a.toast.show(a.t("toast.typeColumnMoved", { n, moved }));
+        else a.toast.show(a.t("toast.typeColumnAdded", { n }));
+      },
     },
     {
       id: "insert.notes",
