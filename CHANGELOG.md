@@ -57,6 +57,9 @@ All notable changes to this project are documented here. The format follows
   another to make a wire. The cavity under the pointer is outlined, in red when
   it already has a wire. The cavity tables at both ends are rewritten as if
   typed, the colour, size and type go with the wire, and it is one undo step.
+- **Delete wire**: right-click a wire in the schematic, or pick it and press
+  Delete. Both cavities let go of it (colour, size and type go with it; function
+  and notes stay), as one undo step.
 
 ## [1.2.0]
 

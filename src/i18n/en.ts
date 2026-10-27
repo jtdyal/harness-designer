@@ -392,7 +392,7 @@ export const en = {
   "guide.views":
     "<b>V</b> switches between the sheet, the schematic and both side by side: what you pick in one lights up in the other, and picking a wire in the schematic shows the branches it runs through on the sheet.",
   "guide.rewire":
-    "<b>In the schematic</b>, drag the end of a wire onto another cavity or connector to move it there, or drag from a free cavity (its dot shows when the pointer is over the connector) onto another to make a new wire. A red outline means the cavity already has a wire.",
+    "<b>In the schematic</b>, drag the end of a wire onto another cavity or connector to move it there, or drag from a free cavity (its dot shows when the pointer is over the connector) onto another to make a new wire. A red outline means the cavity already has a wire. Pick a wire and press <b>Del</b>, or right-click it, to delete it.",
   "cmd.guide": "Quick guide",
   "dialog.deleteTable.body": "Delete table “{title}”?",
 
@@ -529,6 +529,9 @@ export const en = {
     "This connector is drawn as another kind of terminal, so its body is not shown. It is kept, and shows again when it is drawn as a plug again.",
   "body.saved": "Connector body set on {name}",
   "body.removed": "Connector body removed from {name}",
+  "menu.wireDelete": "Delete wire",
+  "toast.wireDeleted": "Wire {from} – {to} deleted",
+  "toast.wireDeleteNone": "That wire is no longer in the tables",
   "menu.typeHeader": "Wire type",
   "menu.typeOther": "Other type…",
   "menu.typeClear": "Clear type",

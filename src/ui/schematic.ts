@@ -13,7 +13,7 @@
  */
 import { cloneDoc } from "@/core/doc";
 import { snapTo } from "@/core/geometry";
-import { connectEnds, moveWireEnd } from "@/core/rewire";
+import { connectEnds, disconnectWire, moveWireEnd } from "@/core/rewire";
 import type { RewireOutcome } from "@/core/rewire";
 import type { Store } from "@/core/store";
 import type { Point, Selection } from "@/core/types";
@@ -73,8 +73,8 @@ export interface SchematicInteractionOptions {
   onFocusChange(): void;
   /** double click on a box: show the same connector on the sheet */
   onReveal?(selection: Selection): void;
-  /** something to tell the person, e.g. that a wire has nowhere to keep a colour */
-  notify?(message: string): void;
+  /** something to tell the person: what was done, or why it could not be */
+  notify?(message: string, kind: "info" | "error"): void;
 }
 
 export function attachSchematicInteraction(opts: SchematicInteractionOptions): () => void {
@@ -219,7 +219,7 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     if (!outcome.ok) {
       if (outcome.reason === "unchanged") return;
       const other = outcome.reason === "occupied" ? outcome.other : "";
-      opts.notify?.(t(`toast.rewire.${outcome.reason}`, { to, other }));
+      opts.notify?.(t(`toast.rewire.${outcome.reason}`, { to, other }), "error");
       return;
     }
     const kept = d.op.kind === "move" ? endsOf(d.op.wire)[d.op.moving === 0 ? 1 : 0] : d.op.from;
@@ -229,7 +229,10 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
         (w) => (w.fromLabel === kept && w.toLabel === to) || (w.fromLabel === to && w.toLabel === kept),
       );
     focusWire(made?.id ?? null);
-    opts.notify?.(t(d.op.kind === "move" ? "toast.rewire.moved" : "toast.rewire.made", { from: kept, to }));
+    opts.notify?.(
+      t(d.op.kind === "move" ? "toast.rewire.moved" : "toast.rewire.made", { from: kept, to }),
+      "info",
+    );
   };
 
   const onPointerDown = (ev: PointerEvent): void => {
@@ -347,7 +350,21 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     const written = store.edit((doc) => {
       setWireColor(doc, [wire.fromLabel, wire.toLabel], value);
     }, "wire-color");
-    if (!written && value) opts.notify?.(t("toast.wireColorNone"));
+    if (!written && value) opts.notify?.(t("toast.wireColorNone"), "error");
+  };
+
+  /** Takes the wire out of the tables at both ends; one undo step. */
+  const deleteWire = (wire: SchemWire): void => {
+    let cleared = 0;
+    store.edit((doc) => {
+      cleared = disconnectWire(doc, endsOf(wire));
+    }, "delete-wire");
+    focusWire(null);
+    if (!cleared) {
+      opts.notify?.(t("toast.wireDeleteNone"), "error");
+      return;
+    }
+    opts.notify?.(t("toast.wireDeleted", { from: wire.fromLabel, to: wire.toLabel }), "info");
   };
 
   const onContextMenu = (ev: MouseEvent): void => {
@@ -366,6 +383,8 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
         run: () => openColorPicker({ value: wire.color, onPick: (value) => setColor(wire, value) }),
       },
       { label: t("menu.wireColorClear"), disabled: wire.color.trim() === "", run: () => setColor(wire, "") },
+      { separator: true },
+      { label: t("menu.wireDelete"), shortcut: "Del", danger: true, run: () => deleteWire(wire) },
     ]);
   };
 
@@ -387,8 +406,27 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     wireDrag = null;
   };
   // Escape puts a wire in hand back where it was
+  // Delete takes out the wire in hand. A wire is not a selection, so the
+  // sheet's own Delete has nothing to act on while one is picked; this does,
+  // but only while the schematic is on screen and nobody is typing
   const onKeyDown = (ev: KeyboardEvent): void => {
-    if (ev.key === "Escape" && wireDrag) cancelGestures();
+    if (ev.key === "Escape" && wireDrag) {
+      cancelGestures();
+      return;
+    }
+    if (ev.key !== "Delete" && ev.key !== "Backspace") return;
+    const id = schematic.focusedWire;
+    if (!id || ev.defaultPrevented || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (svg.getBoundingClientRect().width === 0) return;
+    const field =
+      ev.target instanceof HTMLElement
+        ? ev.target.closest("input, textarea, select, [contenteditable]")
+        : null;
+    if (field) return;
+    const wire = schematic.model().wires.find((w) => w.id === id);
+    if (!wire) return;
+    ev.preventDefault();
+    deleteWire(wire);
   };
 
   svg.addEventListener("pointerdown", onPointerDown);
