@@ -28,6 +28,7 @@ import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/
 import { saveDocToFile } from "@/io/file";
 import { tableSize } from "@/render/tables";
 import { openCommandPalette } from "@/ui/palette";
+import { separateOverlaps } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
 /* ============================ shortcuts ============================ */
@@ -349,6 +350,14 @@ export function registerBuiltinCommands(app: AppContext): void {
       run: (a) => {
         saveDocToFile(a.doc);
         a.toast.show(a.t("toast.saved"));
+      },
+    },
+    {
+      id: "arrange.separate",
+      titleKey: "cmd.separate",
+      run: (a) => {
+        const n = separateOverlaps(a);
+        a.toast.show(n ? a.t("toast.separated", { n }) : a.t("toast.separatedNone"));
       },
     },
     {
