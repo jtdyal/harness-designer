@@ -458,6 +458,7 @@ body {
 }
 .find__status {
   margin-top: 10px;
+}
 /* Reload, while the file on disk has been changed from outside this window */
 .btn.is-stale {
   background: var(--amber);
