@@ -133,6 +133,12 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
+  from them when it is made, by connecting it in the schematic or by typing a
+  destination into an empty cell, and only then: a wire that is already there,
+  or one that is moved, keeps the cells it has, empty ones included. They fill
+  only what neither end of the wire says anything about, so the two ends never
+  disagree, are saved with the drawing, and the size follows a change of unit
+  (the window that warns about rounding lists it).
 
 ## [1.2.0]
 
