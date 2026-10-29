@@ -347,7 +347,7 @@ describe("deleteConnector", () => {
     expect(deleteConnector(doc, "B", "b")).toBe(1);
     expect(doc.tables.map((t) => t.id)).toEqual(["ta", "tc"]);
     expect(doc.nodes.some((n) => n.id === "b")).toBe(false);
-    expect(rowOf(doc, "ta", "1")).toEqual(["1", "", "Power", "", ""]);
+    expect(rowOf(doc, "ta", "1")).toEqual(["1", "", "Power", "", "", ""]);
   });
 
   it("leaves nothing in the schematic pointing at it", () => {
