@@ -1,7 +1,6 @@
 import type { AppContext } from "@/app/context";
-import { autoLinkRow, rowHasDestination } from "@/core/autolink";
-import { isCatalog, isDerivedColumn, nameIsFree, renameEntry } from "@/core/catalog";
 import { applyBirthDefaults, autoLinkRow, rowHasDestination } from "@/core/autolink";
+import { isCatalog, isDerivedColumn, nameIsFree, renameEntry } from "@/core/catalog";
 import {
   findInline,
   findNode,
@@ -185,8 +184,8 @@ function commitCell(app: AppContext, id: string, row: number, col: number, value
   let refused: TitleProblem | null = null;
   let owner = "";
   // a destination written into a row that had none makes a new wire
-  const before = findTable(app.store.doc, id);
-  const hadWire = !!before && row >= 0 && rowHasDestination(before, row);
+  const wired = findTable(app.store.doc, id);
+  const hadWire = !!wired && row >= 0 && rowHasDestination(wired, row);
   const changed = app.store.edit((doc) => {
     const table = findTable(doc, id);
     if (!table) return;
@@ -215,7 +214,6 @@ function commitCell(app: AppContext, id: string, row: number, col: number, value
     app.toast.error(app.t(refused === "taken" ? "toast.titleTaken" : "toast.titleUnlinked", { name: owner }));
     return;
   }
-  if (changed && row >= 0) runAutoLink(app, id, row);
   if (changed && row >= 0) runAutoLink(app, id, row, !hadWire);
 }
 

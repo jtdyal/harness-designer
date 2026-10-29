@@ -67,12 +67,9 @@ All notable changes to this project are documented here. The format follows
 - **Dragging wires in the schematic.** Drag the end of a wire onto another
   cavity, or another connector, to move it there; drag from a free cavity onto
   another to make a wire. The cavity under the pointer is outlined, in red when
-  it already has a wire. The cavity tables at both ends are rewritten as if
+  it already has a wire, written on either side. The cavity tables at both ends are rewritten as if
   typed, the colour, size and type go with the wire, and it is one undo step. When
   the two cavities describe the wire differently (another colour, size or type), a
-  it already has a wire, written on either side. The cavity tables at both ends are rewritten as if
-  typed, the colour and size go with the wire, and it is one undo step. When
-  the two cavities describe the wire differently (another colour or size), a
   window asks whose details it takes, or offers to join them through a new
   splice so that each keeps its own; Cancel leaves everything as it was.
 - **Delete wire**: right-click a wire in the schematic, or pick it and press
@@ -89,9 +86,12 @@ All notable changes to this project are documented here. The format follows
   standard colour picker the sheet uses. The colour is written into the cavity
   tables at both ends of the wire.
 - **Defaults** in the bar: wire size, wire type and wire colour. A wire starts
-  from them when it is connected, in the schematic or by typing a destination
-  in a table. They only fill empty cells, are saved with the drawing, and the
-  size follows a change of unit.
+  from them when it is made, by connecting it in the schematic or by typing a
+  destination into an empty cell, and only then: a wire that is already there,
+  or one that is moved, keeps the cells it has, empty ones included. They fill
+  only what neither end of the wire says anything about, so the two ends never
+  disagree, are saved with the drawing, and the size follows a change of unit
+  (the window that warns about rounding lists it).
 - **Housing and termination tables**, from the _Insert_ menu and given to every
   new drawing. A housing is the plastic a connector is built on, with its
   number of cavities, part number, maker, series, plug or receptacle and
@@ -133,12 +133,6 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
-  from them when it is made, by connecting it in the schematic or by typing a
-  destination into an empty cell, and only then: a wire that is already there,
-  or one that is moved, keeps the cells it has, empty ones included. They fill
-  only what neither end of the wire says anything about, so the two ends never
-  disagree, are saved with the drawing, and the size follows a change of unit
-  (the window that warns about rounding lists it).
 
 ## [1.2.0]
 
