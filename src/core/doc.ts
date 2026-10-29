@@ -483,6 +483,15 @@ export function nodeForTable(doc: HarnessDoc, t: Table): HNode | undefined {
   return doc.nodes.find((n) => n.kind === "connector" && titleMatchesName(t.title, n.name));
 }
 
+/**
+ * A cavity table with no connector on the sheet: the connector was turned into
+ * a splice, or taken off, and the table is still there describing it. The
+ * wires in its rows go nowhere on the drawing until a connector answers to it.
+ */
+export function isOrphanTable(doc: HarnessDoc, table: Table): boolean {
+  return isCavityTable(table) && !nodeForTable(doc, table);
+}
+
 export type TitleProblem = "taken" | "unlinked";
 
 /**
