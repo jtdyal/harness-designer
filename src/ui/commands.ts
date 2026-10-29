@@ -28,7 +28,7 @@ import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
 import { openFind } from "@/ui/find";
 import { openDefaults } from "@/ui/defaults";
-import { deleteCatalogFlow, insertCatalog, startingCatalogs } from "@/ui/catalog";
+import { deleteCatalogFlow, insertCatalog, startingTables } from "@/ui/catalog";
 import { insertTable, viewCenter } from "@/ui/insert";
 import { openCommandPalette } from "@/ui/palette";
 import { separateOverlaps, separateTables } from "@/ui/separate";
@@ -311,12 +311,12 @@ export function registerBuiltinCommands(app: AppContext): void {
     {
       id: "doc.new",
       titleKey: "cmd.new",
-      // a new drawing starts with the two catalogues its connectors are made from
+      // a new drawing starts with the catalogues its connectors are made from, the notes and the revisions
       run: (a) =>
         replaceDocument(a, "dialog.new.title", "dialog.new.body", () => {
           // a new drawing is not the linked file: left linked, the next autosave would empty it
           a.file.detach();
-          a.store.load({ ...emptyDoc(), tables: startingCatalogs(a) });
+          a.store.load({ ...emptyDoc(), tables: startingTables(a) });
         }),
     },
     {

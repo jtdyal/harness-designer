@@ -93,6 +93,8 @@ All notable changes to this project are documented here. The format follows
   quantity and a _Where Used_ column that are worked out from the cavity tables
   after every edit and cannot be typed over. A new drawing starts with the
   multi-pin and DIN housings and the ring, faston, pin, socket and free-end terminations.
+  It also starts with a Notes table, with one empty note, and a Revisions table
+  with the first issue, beside them.
 - A cavity table takes **one housing**, picked from the housing table, and each
   of its rows **one termination**, picked from the termination table (the new
   _Termination_ column; _Add termination column_ gives it to an older table).

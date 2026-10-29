@@ -24,7 +24,7 @@ import {
 } from "@/core/catalog";
 import type { CatalogField, CatalogKind, EntryValues, Fitted } from "@/core/catalog";
 import { cell, deleteEntity, findTable, isCavityTable, ownerName, tableColumns } from "@/core/doc";
-import { catalogTable } from "@/core/factories";
+import { catalogTable, notesTable, revisionsTable } from "@/core/factories";
 import { snapTo } from "@/core/geometry";
 import type { Table } from "@/core/types";
 import { symbolsWithRole } from "@/render/connectors";
@@ -51,12 +51,22 @@ export function insertCatalog(app: AppContext, kind: CatalogKind): void {
   insertTable(app, catalogTable(app.t, kind, 0, 0, seedsFor(app, kind)));
 }
 
-/** Each of the two for a new drawing, one under the other. */
-export function startingCatalogs(app: AppContext): Table[] {
-  const housings = catalogTable(app.t, "housings", 0, 0, seedsFor(app, "housings"));
+/**
+ * What a new drawing starts with: the two catalogues its connectors are made
+ * from, one under the other, and beside them the notes and the revisions,
+ * which every drawing ends up needing and which start empty but for the first
+ * revision.
+ */
+export function startingTables(app: AppContext): Table[] {
+  const { meta } = app.doc;
   const gap = 40;
-  const below = tableSize(housings, app.doc.meta, app.t).h + gap;
-  return [housings, catalogTable(app.t, "terminations", 0, below, seedsFor(app, "terminations"))];
+  const housings = catalogTable(app.t, "housings", 0, 0, seedsFor(app, "housings"));
+  const below = tableSize(housings, meta, app.t).h + gap;
+  const terminations = catalogTable(app.t, "terminations", 0, below, seedsFor(app, "terminations"));
+  const beside = Math.max(tableSize(housings, meta, app.t).w, tableSize(terminations, meta, app.t).w) + gap;
+  const notes = { ...notesTable(app.t, beside, 0), rows: [["1", ""]] };
+  const revisions = revisionsTable(app.t, beside, tableSize(notes, meta, app.t).h + gap);
+  return [housings, terminations, notes, revisions];
 }
 
 /* ============================ choosing ============================ */
