@@ -31,6 +31,48 @@ All notable changes to this project are documented here. The format follows
   before overwriting a file changed from outside. Undoing a Reload does not
   write the drawing it replaced back over the file: autosave pauses instead.
 - **Save as…** (`Ctrl+Shift+S`).
+- **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
+  other one converts every size in the drawing, as one undo step, to the nearest
+  standard size of the new scale, and heads the Section column of every table
+  (and the wire list) with the unit. Text that is not a size is left as typed.
+  The unit is saved with the drawing. Editing a Section cell opens the list of
+  standard sizes for the unit, each with its equivalent in the other, and
+  _Other size…_ for anything not on it. The scales do not line up, so a
+  conversion rounds to the nearest standard size and going to AWG and back can
+  land on a neighbouring size; when any size would change, a window lists each
+  one, with how much thinner or thicker the wire becomes and in how many places,
+  and asks before anything is written.
+- **Objects no longer lie on top of each other.** Drop a table or a connector on
+  the sheet, or a box in the schematic, on top of another and it goes to the
+  nearest free place instead, a little way off and on the grid, as part of the
+  same undo step. _Separate overlapping objects_ (in the command palette and the
+  sheet's background menu) clears up drawings that already have objects on top of
+  each other: tables give way to connectors, and only a box somebody placed by
+  hand moves in the schematic.
+- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
+  cell, with _Other type…_ and _Clear type_, and, like colour and size, is
+  brought into step at the far end of the wire. Cavity tables have a _Wire type_
+  column, and _Insert → Wire type column in every cavity table_ adds it to
+  existing drawings, moving apart any table the new column makes lie on another.
+  Only a column headed _Wire type_ (or _Tipo filo_) counts: a column called just
+  _Type_ is left alone, since older sheets use it for something else.
+- **Dragging wires in the schematic.** Drag the end of a wire onto another
+  cavity, or another connector, to move it there; drag from a free cavity onto
+  another to make a wire. The cavity under the pointer is outlined, in red when
+  it already has a wire. The cavity tables at both ends are rewritten as if
+  typed, the colour, size and type go with the wire, and it is one undo step.
+- **Delete wire**: right-click a wire in the schematic, or pick it and press
+  Delete. Both cavities let go of it (colour, size and type go with it; function
+  and notes stay), as one undo step.
+- **Wires can start from a splice** (or any connector with no cavities) in the
+  schematic: hover it and drag from the dot on either side onto a cavity.
+- **Right click a wire in the schematic** to change its colour, with the same
+  standard colour picker the sheet uses. The colour is written into the cavity
+  tables at both ends of the wire.
+- **Defaults** in the bar: wire size, wire type and wire colour. A wire starts
+  from them when it is connected, in the schematic or by typing a destination
+  in a table. They only fill empty cells, are saved with the drawing, and the
+  size follows a change of unit.
 
 ## [1.2.0]
 

@@ -10,6 +10,9 @@
 import type { AppContext, Command, CommandRegistry } from "@/app/context";
 import { deleteEntity, emptyDoc, findTable } from "@/core/doc";
 import { autoLinkAll } from "@/core/autolink";
+import { addTypeColumn } from "@/core/typecolumn";
+import { previewUnitChange, setWireUnit, unitLabel } from "@/core/wiresize";
+import type { UnitChange } from "@/core/wiresize";
 import { copySelection, countOf, isEmptyClipping } from "@/core/clipboard";
 import { heldClipping, hold, pasteHeldAt } from "@/ui/clipboard";
 import { pointerAt } from "@/ui/pointer";
@@ -17,7 +20,7 @@ import { snapTo } from "@/core/geometry";
 import { uid } from "@/core/ids";
 import { cavityTable, notesTable, revisionsTable, titleBlock, wireListHeadings } from "@/core/factories";
 import { sampleDoc } from "@/core/sample";
-import type { Point, Table } from "@/core/types";
+import type { Point, Table, WireUnit } from "@/core/types";
 import { validateDoc } from "@/core/validate";
 import { wireRowsWithLength } from "@/core/routing";
 import { wireListRows } from "@/core/wirelist";
@@ -25,7 +28,9 @@ import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
 import { tableSize } from "@/render/tables";
 import { openFind } from "@/ui/find";
+import { openDefaults } from "@/ui/defaults";
 import { openCommandPalette } from "@/ui/palette";
+import { separateOverlaps, separateTables } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
 /* ============================ shortcuts ============================ */
@@ -228,7 +233,7 @@ function refreshWireList(app: AppContext): void {
     app.toast.show(t("wirelist.empty"));
     return;
   }
-  const head = wireListHeadings(t);
+  const head = wireListHeadings(t, app.doc.wireUnit);
   const rows = wireListRows(wires);
   const title = t("table.title.wirelist");
   const existing = app.doc.tables.find((tb) => tb.kind === "table" && tb.title === title);
@@ -246,6 +251,53 @@ function refreshWireList(app: AppContext): void {
     insertTable(app, { id: uid("t"), x: 0, y: 0, kind: "table", title, head, rows });
   }
   app.toast.show(t("toast.wirelistUpdated", { n: wires.length }));
+}
+
+/** The most conversions the warning lists; the rest are counted. */
+const UNIT_WARNING_LINES = 12;
+
+/**
+ * Puts every wire size in the drawing into the given unit, as one undo step.
+ * The bar's unit button follows through the "settings" event.
+ *
+ * The scales do not line up, so a conversion rounds, and some sizes come out
+ * thinner than they were drawn. When any size would change, the person is shown
+ * which, and by how much, before anything is written.
+ */
+async function switchWireUnit(app: AppContext, unit: WireUnit): Promise<void> {
+  const { t } = app;
+  const changes = previewUnitChange(app.doc, unit);
+  if (changes.length) {
+    const lines = changes.slice(0, UNIT_WARNING_LINES).map((c) => {
+      const pct = Math.round(Math.abs(c.ratio - 1) * 100);
+      const how = c.ratio < 1 ? t("dialog.unit.thinner", { pct }) : t("dialog.unit.thicker", { pct });
+      return `• ${c.from} → ${c.to}: ${how} (×${c.count})`;
+    });
+    if (changes.length > UNIT_WARNING_LINES) {
+      lines.push(t("dialog.unit.more", { n: changes.length - UNIT_WARNING_LINES }));
+    }
+    const ok = await app.dialogs.confirm({
+      title: t("dialog.unit.title", { unit: unitLabel(unit) }),
+      body: t("dialog.unit.body", { lines: lines.join("\n") }),
+      confirmLabel: t("dialog.unit.confirm"),
+      cancelLabel: t("dialog.cancel"),
+      danger: changes.some((c) => c.ratio < 1),
+    });
+    if (!ok) return;
+  }
+  let change: UnitChange = { converted: 0, skipped: 0 };
+  const changed = app.store.edit((doc) => {
+    change = setWireUnit(doc, unit);
+  }, "wire-unit");
+  if (!changed) return;
+  app.store.emit("settings", {});
+  app.refreshProps();
+  const key = change.skipped
+    ? "toast.wireUnitSkipped"
+    : change.converted
+      ? "toast.wireUnit"
+      : "toast.wireUnitSet";
+  app.toast.show(t(key, { unit: unitLabel(unit), n: change.converted, m: change.skipped }));
 }
 
 async function replaceDocument(
@@ -318,6 +370,14 @@ export function registerBuiltinCommands(app: AppContext): void {
       titleKey: "cmd.reload",
       enabled: (a) => a.file.attached,
       run: (a) => a.file.reload(),
+    },
+    {
+      id: "arrange.separate",
+      titleKey: "cmd.separate",
+      run: (a) => {
+        const n = separateOverlaps(a);
+        a.toast.show(n ? a.t("toast.separated", { n }) : a.t("toast.separatedNone"));
+      },
     },
     {
       id: "doc.check",
@@ -526,11 +586,44 @@ export function registerBuiltinCommands(app: AppContext): void {
       },
     },
 
+    {
+      id: "doc.defaults",
+      titleKey: "cmd.defaults",
+      run: (a) => openDefaults(a),
+    },
+    {
+      id: "doc.unitMm2",
+      titleKey: "cmd.unitMm2",
+      run: (a) => switchWireUnit(a, "mm2"),
+    },
+    {
+      id: "doc.unitAwg",
+      titleKey: "cmd.unitAwg",
+      run: (a) => switchWireUnit(a, "awg"),
+    },
+
     /* ---- inserting ---- */
     {
       id: "insert.cavity",
       titleKey: "cmd.insertCavity",
-      run: (a) => insertTable(a, cavityTable(a.t, 0, 0)),
+      run: (a) => insertTable(a, cavityTable(a.t, 0, 0, undefined, a.doc.wireUnit)),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        let moved = 0;
+        a.store.edit((doc) => {
+          const widened = addTypeColumn(doc, a.t("table.head.type"));
+          n = widened.length;
+          // the new column makes a table wider: one that now lies on its neighbour gives way
+          moved = separateTables(doc, a.renderer, a.store.snapEnabled, widened);
+        }, "type-column");
+        if (!n) a.toast.show(a.t("toast.typeColumnNone"));
+        else if (moved) a.toast.show(a.t("toast.typeColumnMoved", { n, moved }));
+        else a.toast.show(a.t("toast.typeColumnAdded", { n }));
+      },
     },
     {
       id: "insert.notes",
