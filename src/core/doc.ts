@@ -525,7 +525,7 @@ export interface TableColumns {
   color?: number;
   section?: number;
   func?: number;
-  /** what kind of cavity or terminal it is, e.g. "6.3 mm blade" or "Metri-Pack 150" */
+  /** the wire's insulation type, e.g. GXL or TXL; only an explicit Wire type heading counts */
   type?: number;
   /** the contact this cavity takes, picked from the termination table */
   termination?: number;

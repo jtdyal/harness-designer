@@ -121,17 +121,17 @@ function separateSheet(doc: HarnessDoc, renderer: RendererApi, snap: boolean): n
     if (connectors.slice(0, n).some((earlier) => overlaps(c.rect, earlier.rect))) movable.add(c.id);
   });
   for (const item of items) if (item.kind === "table") movable.add(item.id);
-  return moveApart(doc, items, movable);
+  return moveApart(doc, items, movable).length;
 }
 
-/** Moves the movable items off whatever they lie on, in the document. Returns how many moved. */
-function moveApart(doc: HarnessDoc, items: readonly SheetItem[], movable: ReadonlySet<string>): number {
+/** Moves the movable items off whatever they lie on, in the document. Returns the ids that moved. */
+function moveApart(doc: HarnessDoc, items: readonly SheetItem[], movable: ReadonlySet<string>): string[] {
   const moved = separate(items, movable);
   for (const [id, spot] of moved) {
     const item = items.find((i) => i.id === id);
     if (item) moveSheetObject(doc, item, spot);
   }
-  return moved.size;
+  return [...moved.keys()];
 }
 
 /**
@@ -146,7 +146,54 @@ export function separateTables(
   tableIds: readonly string[],
 ): number {
   const items = sheetItems(doc, renderer, snap);
-  return moveApart(doc, items, new Set(tableIds.map((id) => keyOf("table", id))));
+  return moveApart(doc, items, new Set(tableIds.map((id) => keyOf("table", id)))).length;
+}
+
+/**
+ * Lets tables get wider without them lying on their neighbours: `widen` changes
+ * the document and returns the ids of the tables it made wider, and every table
+ * to the right of one of them, in the same row, moves right by what it gained
+ * (rounded up to the grid), so the layout stays what it was instead of tables
+ * jumping to wherever there is room. What still lies on something afterwards, a
+ * connector or a table of another row, gives way as in `separateTables`.
+ * Returns the tables that were widened and how many tables moved.
+ */
+export function widenTables(
+  doc: HarnessDoc,
+  renderer: RendererApi,
+  snap: boolean,
+  widen: () => string[],
+): { widened: string[]; moved: number } {
+  const before = new Map<string, Rect>();
+  for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") before.set(i.ref, i.rect);
+  const widened = widen();
+  const after = new Map<string, Rect>();
+  for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") after.set(i.ref, i.rect);
+
+  const gains = widened.flatMap((id) => {
+    const was = before.get(id);
+    const now = after.get(id);
+    return was && now && now.w > was.w ? [{ id, was, gain: now.w - was.w }] : [];
+  });
+  const shifted = new Set<string>();
+  for (const [id, rect] of before) {
+    let by = 0;
+    for (const g of gains) {
+      const toTheRight = rect.x >= g.was.x + g.was.w - 1;
+      const sameRow = g.was.y < rect.y + rect.h && rect.y < g.was.y + g.was.h;
+      if (g.id !== id && toTheRight && sameRow) by += g.gain;
+    }
+    if (!by) continue;
+    const table = findTable(doc, id);
+    if (!table) continue;
+    table.x += snap ? Math.ceil(by / GRID) * GRID : by;
+    shifted.add(id);
+  }
+
+  const items = sheetItems(doc, renderer, snap);
+  const movable = new Set([...widened, ...shifted].map((id) => keyOf("table", id)));
+  const clearedUp = moveApart(doc, items, movable).map((id) => id.slice("table:".length));
+  return { widened, moved: new Set([...shifted, ...clearedUp]).size };
 }
 
 /**

@@ -31,7 +31,7 @@ import { openDefaults } from "@/ui/defaults";
 import { deleteCatalogFlow, insertCatalog, startingTables } from "@/ui/catalog";
 import { insertTable, viewCenter } from "@/ui/insert";
 import { openCommandPalette } from "@/ui/palette";
-import { separateOverlaps, separateTables } from "@/ui/separate";
+import { separateOverlaps, widenTables } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
 
 /* ============================ shortcuts ============================ */
@@ -602,10 +602,12 @@ export function registerBuiltinCommands(app: AppContext): void {
         let n = 0;
         let moved = 0;
         a.store.edit((doc) => {
-          const widened = addTypeColumn(doc, a.t("table.head.type"));
-          n = widened.length;
-          // the new column makes a table wider: one that now lies on its neighbour gives way
-          moved = separateTables(doc, a.renderer, a.store.snapEnabled, widened);
+          // the new column makes a table wider: the tables to its right move over by what it gained
+          const result = widenTables(doc, a.renderer, a.store.snapEnabled, () =>
+            addTypeColumn(doc, a.t("table.head.type")),
+          );
+          n = result.widened.length;
+          moved = result.moved;
         }, "type-column");
         if (!n) a.toast.show(a.t("toast.typeColumnNone"));
         else if (moved) a.toast.show(a.t("toast.typeColumnMoved", { n, moved }));
