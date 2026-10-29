@@ -127,6 +127,9 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
+  hand moves in the schematic. It works on the views on screen only, and a drop
+  whose nearest free place is more than 240 units away stays where it was
+  dropped, with a message, rather than jumping across a long table.
 
 ## [1.2.0]
 
