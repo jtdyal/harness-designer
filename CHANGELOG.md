@@ -53,7 +53,6 @@ All notable changes to this project are documented here. The format follows
   same undo step. _Separate overlapping objects_ (in the command palette and the
   sheet's background menu) clears up drawings that already have objects on top of
   each other: tables give way to connectors, and only a box somebody placed by
-  hand moves in the schematic.
   hand moves in the schematic. It works on the views on screen only, and a drop
   whose nearest free place is more than 240 units away stays where it was
   dropped, with a message, rather than jumping across a long table.
@@ -131,9 +130,6 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
-  hand moves in the schematic. It works on the views on screen only, and a drop
-  whose nearest free place is more than 240 units away stays where it was
-  dropped, with a message, rather than jumping across a long table.
 
 ## [1.2.0]
 
