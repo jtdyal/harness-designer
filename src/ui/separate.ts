@@ -13,7 +13,7 @@
 import type { AppContext, RendererApi } from "@/app/context";
 import { findNode, findTable } from "@/core/doc";
 import { GRID } from "@/core/geometry";
-import { freeSpot, overlaps, separate } from "@/core/overlap";
+import { OVERLAP_GAP, freeSpot, overlaps, separate } from "@/core/overlap";
 import type { Item } from "@/core/overlap";
 import { buildSchematic } from "@/core/schematic";
 import type { HarnessDoc, Point, Rect } from "@/core/types";
@@ -151,12 +151,13 @@ export function separateTables(
 
 /**
  * Lets tables get wider without them lying on their neighbours: `widen` changes
- * the document and returns the ids of the tables it made wider, and every table
- * to the right of one of them, in the same row, moves right by what it gained
- * (rounded up to the grid), so the layout stays what it was instead of tables
- * jumping to wherever there is room. What still lies on something afterwards, a
- * connector or a table of another row, gives way as in `separateTables`.
- * Returns the tables that were widened and how many tables moved.
+ * the document and returns the ids of the tables it made wider. A table that
+ * the wider one now lies on is pushed to the right, just far enough to clear it
+ * (and onto the grid), and pushes in turn whatever it now lies on, so the
+ * layout stays what it was and nothing travels farther than it has to; a table
+ * that was clear of the widened one does not move. What still lies on something
+ * afterwards, a connector or a table that was not to the right, gives way as in
+ * `separateTables`. Returns the tables that were widened and how many moved.
  */
 export function widenTables(
   doc: HarnessDoc,
@@ -164,36 +165,33 @@ export function widenTables(
   snap: boolean,
   widen: () => string[],
 ): { widened: string[]; moved: number } {
-  const before = new Map<string, Rect>();
-  for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") before.set(i.ref, i.rect);
   const widened = widen();
-  const after = new Map<string, Rect>();
-  for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") after.set(i.ref, i.rect);
+  const rects = new Map<string, Rect>();
+  for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") rects.set(i.ref, { ...i.rect });
 
-  const gains = widened.flatMap((id) => {
-    const was = before.get(id);
-    const now = after.get(id);
-    return was && now && now.w > was.w ? [{ id, was, gain: now.w - was.w }] : [];
-  });
-  const shifted = new Set<string>();
-  for (const [id, rect] of before) {
-    let by = 0;
-    for (const g of gains) {
-      const toTheRight = rect.x >= g.was.x + g.was.w - 1;
-      const sameRow = g.was.y < rect.y + rect.h && rect.y < g.was.y + g.was.h;
-      if (g.id !== id && toTheRight && sameRow) by += g.gain;
+  const pushed = new Set<string>();
+  const pending = widened.filter((id) => rects.has(id));
+  while (pending.length) {
+    pending.sort((p, q) => rects.get(p)!.x - rects.get(q)!.x);
+    const id = pending.shift()!;
+    const wide = rects.get(id)!;
+    for (const [other, rect] of rects) {
+      if (other === id || rect.x < wide.x || !overlaps(wide, rect)) continue;
+      let by = wide.x + wide.w + OVERLAP_GAP - rect.x;
+      if (snap) by = Math.ceil(by / GRID) * GRID;
+      const table = findTable(doc, other);
+      if (!table) continue;
+      table.x += by;
+      rect.x += by;
+      pushed.add(other);
+      if (!pending.includes(other)) pending.push(other);
     }
-    if (!by) continue;
-    const table = findTable(doc, id);
-    if (!table) continue;
-    table.x += snap ? Math.ceil(by / GRID) * GRID : by;
-    shifted.add(id);
   }
 
   const items = sheetItems(doc, renderer, snap);
-  const movable = new Set([...widened, ...shifted].map((id) => keyOf("table", id)));
+  const movable = new Set([...widened, ...pushed].map((id) => keyOf("table", id)));
   const clearedUp = moveApart(doc, items, movable).map((id) => id.slice("table:".length));
-  return { widened, moved: new Set([...shifted, ...clearedUp]).size };
+  return { widened, moved: new Set([...pushed, ...clearedUp]).size };
 }
 
 /**

@@ -191,7 +191,7 @@ describe("widenTables", () => {
     return ids;
   };
 
-  it("moves the tables to the right over by what the table gained, and leaves the widened one", () => {
+  it("pushes the tables to the right just far enough to clear the table that got wider", () => {
     const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 200, 0, 3), table("c", 400, 0, 3)] });
     const [a, b, c] = doc.tables as [Table, Table, Table];
     const result = widenTables(doc, renderer(doc), true, grow(doc, ["a"]));
@@ -201,7 +201,7 @@ describe("widenTables", () => {
     expect(c.x).toBe(460);
   });
 
-  it("adds up the gains of several widened tables in one row", () => {
+  it("pushes a chain of tables along, each as far as the one before needs", () => {
     const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 200, 0, 3), table("c", 400, 0, 3)] });
     const [, b, c] = doc.tables as [Table, Table, Table];
     widenTables(doc, renderer(doc), true, grow(doc, ["a", "b"]));
@@ -225,6 +225,13 @@ describe("widenTables", () => {
       ["below", 200],
       ["up", 400],
     ]);
+  });
+
+  it("leaves a table that is still clear of the wider one where it is", () => {
+    const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 400, 0, 3)] });
+    const [, b] = doc.tables as [Table, Table];
+    expect(widenTables(doc, renderer(doc), true, grow(doc, ["a"]))).toEqual({ widened: ["a"], moved: 0 });
+    expect(b.x).toBe(400);
   });
 
   it("keeps the moved tables on the grid", () => {
