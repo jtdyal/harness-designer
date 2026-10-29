@@ -70,6 +70,9 @@ All notable changes to this project are documented here. The format follows
   it already has a wire. The cavity tables at both ends are rewritten as if
   typed, the colour, size and type go with the wire, and it is one undo step. When
   the two cavities describe the wire differently (another colour, size or type), a
+  it already has a wire, written on either side. The cavity tables at both ends are rewritten as if
+  typed, the colour and size go with the wire, and it is one undo step. When
+  the two cavities describe the wire differently (another colour or size), a
   window asks whose details it takes, or offers to join them through a new
   splice so that each keeps its own; Cancel leaves everything as it was.
 - **Delete wire**: right-click a wire in the schematic, or pick it and press
