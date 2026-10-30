@@ -19,7 +19,7 @@ import { lerpPoint } from "@/core/geometry";
 import type { HarnessDoc, Point, Rect, Selection, Table } from "@/core/types";
 import { HEAD_ROW, ROW_H, TITLE_ROW, cellAt, cellRect, titleBlockLayout } from "@/render/tables";
 import { textWidth } from "@/render/svg";
-import { nearestSize, sizesFor, unitLabel, wireUnitOf } from "@/core/wiresize";
+import { nearestSize, parseSize, sizesFor, unitLabel, wireUnitOf } from "@/core/wiresize";
 import { WIRE_TYPES } from "@/core/wiretype";
 import { assignTermination } from "./catalog";
 import { openColorPicker } from "./colorpicker";
@@ -294,13 +294,21 @@ function openChoiceMenu(
   row: number,
   col: number,
   rect: Rect,
-  options: { header: string; choices: readonly Choice[]; other: string; clear: string },
+  options: {
+    header: string;
+    choices: readonly Choice[];
+    other: string;
+    clear: string;
+    /** whether the cell already holds this choice, when spelling it differently is still the same */
+    holds?: (choice: Choice, written: string) => boolean;
+  },
 ): void {
   const now = readCell(table, row, col).trim();
+  const holds = options.holds ?? ((choice: Choice, written: string): boolean => written === choice.value);
   const items: MenuItem[] = [{ header: options.header }];
   for (const choice of options.choices) {
     items.push({
-      label: `${now === choice.value ? "● " : "○ "}${choice.label}`,
+      label: `${holds(choice, now) ? "● " : "○ "}${choice.label}`,
       ...(choice.note ? { shortcut: choice.note } : {}),
       run: () => commitCell(app, table.id, row, col, choice.value),
     });
@@ -340,6 +348,12 @@ function openSizeMenu(app: AppContext, table: Table, row: number, col: number, r
     })),
     other: t("menu.sizeOther"),
     clear: t("menu.sizeClear"),
+    // "2.5 mm²", "0,75" and "18 AWG" are the sizes they say, however they are spelled
+    holds: (choice, written) => {
+      const here = parseSize(written, unit);
+      const size = sizesFor(unit).find((s) => s.label === choice.value);
+      return !!here && !!size && (here.unit ?? unit) === unit && Math.abs(here.area / size.area - 1) < 1e-6;
+    },
   });
 }
 
