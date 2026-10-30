@@ -462,11 +462,11 @@ describe("a wire joining cavities that disagree about it", () => {
     const start = make();
     expect(moveWireEnd(start, ["A.2", "S1"], 0, "C.1", "start")).toEqual({ ok: true });
     expect(rowOf(start, "tc", "1")[1]).toBe("S1");
-    expect(rowOf(start, "tc", "1").slice(3)).toEqual(["Blue", "2.5"]);
+    expect(rowOf(start, "tc", "1").slice(3, 5)).toEqual(["Blue", "2.5"]);
     expect(rowOf(start, "ta", "2")[1]).toBe("");
     const target = make();
     moveWireEnd(target, ["A.2", "S1"], 0, "C.1", "target");
-    expect(rowOf(target, "tc", "1").slice(3)).toEqual(["Red", "1.5"]);
+    expect(rowOf(target, "tc", "1").slice(3, 5)).toEqual(["Red", "1.5"]);
   });
 
   it("gives both ends the details of the cavity the wire comes from", () => {
