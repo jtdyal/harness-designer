@@ -139,6 +139,8 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
+  _Type_ is left alone, since older sheets use it for something else. The check warns when the two ends of a wire
+  declare different wire types, as it does for colour and section.
 
 ## [1.2.0]
 
