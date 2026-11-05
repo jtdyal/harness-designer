@@ -326,7 +326,7 @@ function settle(doc: HarnessDoc, start: End, target: End, prefer: Prefer): void 
  * Takes a wire out: both cavities let go of it. Each end is cleared only if it
  * really points at the other, so a table that disagrees about the wire is not
  * made to lose a different one. What the cavity says about the wire — colour,
- * size, function, notes — stays, so that putting the wire back, or another one
+ * size, type, function, notes — stays, so that putting the wire back, or another one
  * in its place, does not start from an empty row.
  *
  * Returns how many rows were cleared, zero when the tables hold no such wire.

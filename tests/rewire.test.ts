@@ -3,10 +3,10 @@ import { normalizeDoc } from "@/core/doc";
 import { HEAD_H, PIN_H, buildSchematic, targetAt, targetLabel } from "@/core/schematic";
 import {
   connectEnds,
-  connectionCount,
-  deleteConnector,
   connectViaSplice,
   detailsConflict,
+  connectionCount,
+  deleteConnector,
   disconnectWire,
   endLabel,
   moveWireEnd,
@@ -329,8 +329,8 @@ describe("disconnectWire", () => {
   it("lets go of the wire at both ends and keeps what each cavity says about it", () => {
     const doc = harness();
     expect(disconnectWire(doc, ["A.1", "B.1"])).toBe(2);
-    expect(rowOf(doc, "ta", "1").slice(0, 5)).toEqual(["1", "", "Power", "Red", "1.5"]);
-    expect(rowOf(doc, "tb", "1").slice(0, 5)).toEqual(["1", "", "Power", "Red", "1.5"]);
+    expect(rowOf(doc, "ta", "1")).toEqual(["1", "", "Power", "Red", "1.5", "GXL"]);
+    expect(rowOf(doc, "tb", "1")).toEqual(["1", "", "Power", "Red", "1.5", "GXL"]);
   });
 
   it("is gone from the schematic afterwards", () => {
@@ -358,57 +358,6 @@ describe("disconnectWire", () => {
     disconnectWire(doc, ["A.1", "B.1"]);
     expect(connectEnds(doc, "A.1", "B.1")).toEqual({ ok: true });
     expect(rowOf(doc, "tb", "1")[1]).toBe("A.1");
-  });
-});
-
-describe("deleteConnector", () => {
-  it("counts the wires that touch a connector once each, whichever end says so", () => {
-    const doc = harness();
-    connectEnds(doc, "B.2", "C.1");
-    expect(connectionCount(doc, "B")).toBe(2);
-    expect(connectionCount(doc, "A")).toBe(1);
-    expect(connectionCount(doc, "S1")).toBe(0);
-  });
-
-  it("disconnects the other ends, deletes its table and takes the node off the sheet", () => {
-    const doc = harness();
-    expect(deleteConnector(doc, "B", "b")).toBe(1);
-    expect(doc.tables.map((t) => t.id)).toEqual(["ta", "tc"]);
-    expect(doc.nodes.some((n) => n.id === "b")).toBe(false);
-    expect(rowOf(doc, "ta", "1").slice(0, 5)).toEqual(["1", "", "Power", "Red", "1.5"]);
-  });
-
-  it("leaves nothing in the schematic pointing at it", () => {
-    const doc = harness();
-    deleteConnector(doc, "B", "b");
-    const model = buildSchematic(doc);
-    expect(model.wires).toHaveLength(0);
-    expect(model.byName.has("B")).toBe(false);
-  });
-
-  it("takes a splice out and lets go of the cavities that went to it", () => {
-    const doc = harness();
-    connectEnds(doc, "A.2", "S1");
-    connectEnds(doc, "C.1", "S1");
-    expect(deleteConnector(doc, "S1", "s")).toBe(2);
-    expect(rowOf(doc, "ta", "2")[1]).toBe("");
-    expect(rowOf(doc, "tc", "1")[1]).toBe("");
-    expect(doc.nodes.some((n) => n.id === "s")).toBe(false);
-  });
-
-  it("forgets where the box was put by hand", () => {
-    const doc = harness();
-    doc.schematic = { B: { x: 5, y: 5 }, C: { x: 9, y: 9 } };
-    deleteConnector(doc, "B", "b");
-    expect(doc.schematic).toEqual({ C: { x: 9, y: 9 } });
-  });
-
-  it("does not touch a connector whose name only starts the same", () => {
-    const doc = harness();
-    connectEnds(doc, "A.2", "C.1");
-    expect(deleteConnector(doc, "C", "c")).toBe(1);
-    expect(rowOf(doc, "ta", "1")[1]).toBe("B.1");
-    expect(rowOf(doc, "ta", "2")[1]).toBe("");
   });
 });
 
@@ -462,33 +411,33 @@ describe("a wire joining cavities that disagree about it", () => {
     const start = make();
     expect(moveWireEnd(start, ["A.2", "S1"], 0, "C.1", "start")).toEqual({ ok: true });
     expect(rowOf(start, "tc", "1")[1]).toBe("S1");
-    expect(rowOf(start, "tc", "1").slice(3, 5)).toEqual(["Blue", "2.5"]);
+    expect(rowOf(start, "tc", "1").slice(3)).toEqual(["Blue", "2.5", ""]);
     expect(rowOf(start, "ta", "2")[1]).toBe("");
     const target = make();
     moveWireEnd(target, ["A.2", "S1"], 0, "C.1", "target");
-    expect(rowOf(target, "tc", "1").slice(3, 5)).toEqual(["Red", "1.5"]);
+    expect(rowOf(target, "tc", "1").slice(3)).toEqual(["Red", "1.5", ""]);
   });
 
   it("gives both ends the details of the cavity the wire comes from", () => {
     const doc = unlike();
     expect(connectEnds(doc, "A.2", "C.1", "start")).toEqual({ ok: true });
-    expect(rowOf(doc, "ta", "2").slice(3, 5)).toEqual(["Blue", "2.5"]);
-    expect(rowOf(doc, "tc", "1").slice(3, 5)).toEqual(["Blue", "2.5"]);
+    expect(rowOf(doc, "ta", "2").slice(3)).toEqual(["Blue", "2.5", ""]);
+    expect(rowOf(doc, "tc", "1").slice(3)).toEqual(["Blue", "2.5", ""]);
   });
 
   it("gives both ends the details of the cavity it is dropped on", () => {
     const doc = unlike();
     expect(connectEnds(doc, "A.2", "C.1", "target")).toEqual({ ok: true });
-    expect(rowOf(doc, "ta", "2").slice(3, 5)).toEqual(["Red", "1.5"]);
-    expect(rowOf(doc, "tc", "1").slice(3, 5)).toEqual(["Red", "1.5"]);
+    expect(rowOf(doc, "ta", "2").slice(3)).toEqual(["Red", "1.5", ""]);
+    expect(rowOf(doc, "tc", "1").slice(3)).toEqual(["Red", "1.5", ""]);
   });
 
   it("does the same when an end is moved", () => {
     const doc = unlike();
     Object.assign(rowOf(doc, "tc", "1"), { 3: "Green", 4: "" });
     expect(moveWireEnd(doc, ["A.1", "B.1"], 1, "C.1", "target")).toEqual({ ok: true });
-    expect(rowOf(doc, "ta", "1").slice(3, 5)).toEqual(["Green", "1.5"]);
-    expect(rowOf(doc, "tc", "1").slice(3, 5)).toEqual(["Green", "1.5"]);
+    expect(rowOf(doc, "ta", "1").slice(3)).toEqual(["Green", "1.5", "GXL"]);
+    expect(rowOf(doc, "tc", "1").slice(3)).toEqual(["Green", "1.5", "GXL"]);
     expect(rowOf(doc, "tb", "1")[1]).toBe("");
   });
 
@@ -496,8 +445,8 @@ describe("a wire joining cavities that disagree about it", () => {
     const doc = unlike();
     const result = connectViaSplice(doc, made, "C.1");
     expect(result).toEqual({ ok: true, splice: "S2" });
-    expect(rowOf(doc, "ta", "2").slice(1, 5)).toEqual(["S2", "", "Blue", "2.5"]);
-    expect(rowOf(doc, "tc", "1").slice(1, 5)).toEqual(["S2", "", "Red", "1.5"]);
+    expect(rowOf(doc, "ta", "2").slice(1)).toEqual(["S2", "", "Blue", "2.5", ""]);
+    expect(rowOf(doc, "tc", "1").slice(1)).toEqual(["S2", "", "Red", "1.5", ""]);
     const node = doc.nodes.find((n) => n.name === "S2");
     expect(node).toMatchObject({ kind: "connector", style: "splice" });
     // it is on the way: on the junction between the two connectors, so both wires reach it
@@ -519,5 +468,56 @@ describe("a wire joining cavities that disagree about it", () => {
     const doc = unlike();
     Object.assign(rowOf(doc, "tc", "1"), { 1: "B.3" });
     expect(connectViaSplice(doc, made, "C.1")).toEqual({ ok: false, reason: "occupied", other: "B.3" });
+  });
+});
+
+describe("deleteConnector", () => {
+  it("counts the wires that touch a connector once each, whichever end says so", () => {
+    const doc = harness();
+    connectEnds(doc, "B.2", "C.1");
+    expect(connectionCount(doc, "B")).toBe(2);
+    expect(connectionCount(doc, "A")).toBe(1);
+    expect(connectionCount(doc, "S1")).toBe(0);
+  });
+
+  it("disconnects the other ends, deletes its table and takes the node off the sheet", () => {
+    const doc = harness();
+    expect(deleteConnector(doc, "B", "b")).toBe(1);
+    expect(doc.tables.map((t) => t.id)).toEqual(["ta", "tc"]);
+    expect(doc.nodes.some((n) => n.id === "b")).toBe(false);
+    expect(rowOf(doc, "ta", "1")).toEqual(["1", "", "Power", "Red", "1.5", "GXL"]);
+  });
+
+  it("leaves nothing in the schematic pointing at it", () => {
+    const doc = harness();
+    deleteConnector(doc, "B", "b");
+    const model = buildSchematic(doc);
+    expect(model.wires).toHaveLength(0);
+    expect(model.byName.has("B")).toBe(false);
+  });
+
+  it("takes a splice out and lets go of the cavities that went to it", () => {
+    const doc = harness();
+    connectEnds(doc, "A.2", "S1");
+    connectEnds(doc, "C.1", "S1");
+    expect(deleteConnector(doc, "S1", "s")).toBe(2);
+    expect(rowOf(doc, "ta", "2")[1]).toBe("");
+    expect(rowOf(doc, "tc", "1")[1]).toBe("");
+    expect(doc.nodes.some((n) => n.id === "s")).toBe(false);
+  });
+
+  it("forgets where the box was put by hand", () => {
+    const doc = harness();
+    doc.schematic = { B: { x: 5, y: 5 }, C: { x: 9, y: 9 } };
+    deleteConnector(doc, "B", "b");
+    expect(doc.schematic).toEqual({ C: { x: 9, y: 9 } });
+  });
+
+  it("does not touch a connector whose name only starts the same", () => {
+    const doc = harness();
+    connectEnds(doc, "A.2", "C.1");
+    expect(deleteConnector(doc, "C", "c")).toBe(1);
+    expect(rowOf(doc, "ta", "1")[1]).toBe("B.1");
+    expect(rowOf(doc, "ta", "2")[1]).toBe("");
   });
 });

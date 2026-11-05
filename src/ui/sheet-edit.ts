@@ -20,8 +20,8 @@ import type { HarnessDoc, Point, Rect, Selection, Table } from "@/core/types";
 import { HEAD_ROW, ROW_H, TITLE_ROW, cellAt, cellRect, titleBlockLayout } from "@/render/tables";
 import { textWidth } from "@/render/svg";
 import { nearestSize, parseSize, sizesFor, unitLabel, wireUnitOf } from "@/core/wiresize";
-import { WIRE_TYPES } from "@/core/wiretype";
 import { assignTermination } from "./catalog";
+import { WIRE_TYPES } from "@/core/wiretype";
 import { openColorPicker } from "./colorpicker";
 import { openInlineEditor } from "./inline-edit";
 import { openMenu } from "./menu";
@@ -184,8 +184,8 @@ function commitCell(app: AppContext, id: string, row: number, col: number, value
   let refused: TitleProblem | null = null;
   let owner = "";
   // a destination written into a row that had none makes a new wire
-  const wired = findTable(app.store.doc, id);
-  const hadWire = !!wired && row >= 0 && rowHasDestination(wired, row);
+  const before = findTable(app.store.doc, id);
+  const hadWire = !!before && row >= 0 && rowHasDestination(before, row);
   const changed = app.store.edit((doc) => {
     const table = findTable(doc, id);
     if (!table) return;

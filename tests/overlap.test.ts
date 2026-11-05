@@ -195,7 +195,7 @@ describe("widenTables", () => {
     const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 200, 0, 3), table("c", 400, 0, 3)] });
     const [a, b, c] = doc.tables as [Table, Table, Table];
     const result = widenTables(doc, renderer(doc), true, grow(doc, ["a"]));
-    expect(result).toEqual({ widened: ["a"], moved: 2 });
+    expect(result).toEqual({ widened: ["a"], moved: 2, stuck: [] });
     expect(a).toMatchObject({ x: 0 });
     expect(b.x).toBe(260); // 60 wider
     expect(c.x).toBe(460);
@@ -230,8 +230,35 @@ describe("widenTables", () => {
   it("leaves a table that is still clear of the wider one where it is", () => {
     const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 400, 0, 3)] });
     const [, b] = doc.tables as [Table, Table];
-    expect(widenTables(doc, renderer(doc), true, grow(doc, ["a"]))).toEqual({ widened: ["a"], moved: 0 });
+    expect(widenTables(doc, renderer(doc), true, grow(doc, ["a"]))).toEqual({
+      widened: ["a"],
+      moved: 0,
+      stuck: [],
+    });
     expect(b.x).toBe(400);
+  });
+
+  it("leaves a table where it is when the nearest free place is farther than a nudge, and says which", () => {
+    // a long, tall table to the left spans the whole of the one that gets wider: every way out is far
+    const big = table("big", -300, -300, 20);
+    big.rows = Array.from({ length: 40 }, (_, i) => [String(i)]);
+    const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), big] });
+    const [a] = doc.tables as [Table, Table];
+    const result = widenTables(doc, renderer(doc), true, grow(doc, ["a"]));
+    expect(result).toEqual({ widened: ["a"], moved: 0, stuck: ["a"] });
+    expect(a).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it("lets the others go round a table that stayed", () => {
+    const big = table("big", -300, -300, 20);
+    big.rows = Array.from({ length: 40 }, (_, i) => [String(i)]);
+    // b lies to the right of a and is pushed on, but the one left behind is not given another table's place
+    const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 200, 0, 3), big] });
+    const result = widenTables(doc, renderer(doc), true, grow(doc, ["a"]));
+    expect(result.stuck).toContain("a");
+    const rects = doc.tables.map((t) => renderer(doc).entityBBox({ type: "table", id: t.id }) as Rect);
+    // b was pushed clear of a, whatever happened to big
+    expect(overlaps(rects[0] as Rect, rects[1] as Rect)).toBe(false);
   });
 
   it("keeps the moved tables on the grid", () => {
@@ -243,6 +270,6 @@ describe("widenTables", () => {
 
   it("moves nothing when nothing got wider", () => {
     const doc = normalizeDoc({ tables: [table("a", 0, 0, 3), table("b", 400, 0, 3)] });
-    expect(widenTables(doc, renderer(doc), true, () => [])).toEqual({ widened: [], moved: 0 });
+    expect(widenTables(doc, renderer(doc), true, () => [])).toEqual({ widened: [], moved: 0, stuck: [] });
   });
 });

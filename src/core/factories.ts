@@ -27,8 +27,8 @@ export function cavityTable(t: Translate, x: number, y: number, title?: string, 
       t("table.head.notes"),
     ],
     rows: [
-      ["1", "", "", "", "", "", "", ""],
-      ["2", "", "", "", "", "", "", ""],
+      ["1", "", "", "", "", "", ""],
+      ["2", "", "", "", "", "", ""],
     ],
   };
 }

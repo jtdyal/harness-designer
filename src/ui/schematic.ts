@@ -22,9 +22,9 @@ import type { SchemBox, SchemTarget, SchemWire } from "@/core/schematic";
 import { setWireColor } from "@/core/wirecolor";
 import { t } from "@/i18n";
 import type { SchematicRenderer } from "@/render/schematic";
-import { settleSchematicDrop } from "./separate";
 import { openColorPicker } from "./colorpicker";
 import { openMenu } from "./menu";
+import { settleSchematicDrop } from "./separate";
 import type { MenuItem } from "./menu";
 
 /** Below this the movement was a click, not a drag. */

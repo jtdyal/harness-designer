@@ -34,6 +34,14 @@ export const MAX_NUDGE = 240;
 /** What came of a drop on the sheet: nothing to do, moved clear, or no free place near enough. */
 export type SettleResult = "clear" | "moved" | "far";
 
+/**
+ * How far a table that got wider may be moved to clear what it now lies on.
+ * Shorter than a drop's, since nothing was dragged: a table that has to travel
+ * more than this has probably run into the bundle, which the search cannot see,
+ * and is better left than put somewhere the drawing did not have it.
+ */
+export const MAX_WIDEN_NUDGE = 100;
+
 /** What kind of object a drop on the sheet was. */
 export type SheetObject = "node" | "table";
 
@@ -157,14 +165,18 @@ export function separateTables(
  * layout stays what it was and nothing travels farther than it has to; a table
  * that was clear of the widened one does not move. What still lies on something
  * afterwards, a connector or a table that was not to the right, gives way as in
- * `separateTables`. Returns the tables that were widened and how many moved.
+ * `separateTables`, but not farther than `MAX_WIDEN_NUDGE`: past that the table stays
+ * where it is, since the nearest free place is somewhere it was not drawn and
+ * the bundle is not something the search can see. Those are returned in `stuck`
+ * so the person can be told which tables still lie on something. Returns the
+ * tables that were widened, how many moved, and the ones left on something.
  */
 export function widenTables(
   doc: HarnessDoc,
   renderer: RendererApi,
   snap: boolean,
   widen: () => string[],
-): { widened: string[]; moved: number } {
+): { widened: string[]; moved: number; stuck: string[] } {
   const widened = widen();
   const rects = new Map<string, Rect>();
   for (const i of sheetItems(doc, renderer, snap)) if (i.kind === "table") rects.set(i.ref, { ...i.rect });
@@ -190,8 +202,45 @@ export function widenTables(
 
   const items = sheetItems(doc, renderer, snap);
   const movable = new Set([...widened, ...pushed].map((id) => keyOf("table", id)));
-  const clearedUp = moveApart(doc, items, movable).map((id) => id.slice("table:".length));
-  return { widened, moved: new Set([...pushed, ...clearedUp]).size };
+  const { moved, stuck } = moveApartNear(doc, items, movable);
+  const clearedUp = moved.map((id) => id.slice("table:".length));
+  return {
+    widened,
+    moved: new Set([...pushed, ...clearedUp]).size,
+    stuck: stuck.map((id) => id.slice("table:".length)),
+  };
+}
+
+/**
+ * `moveApart`, except that an item whose free place is farther than
+ * `MAX_WIDEN_NUDGE` stays where it is. It then counts as something the others must
+ * go round, so the search runs again without it until nothing new is left.
+ */
+function moveApartNear(
+  doc: HarnessDoc,
+  items: readonly SheetItem[],
+  movable: ReadonlySet<string>,
+): { moved: string[]; stuck: string[] } {
+  const free = new Set(movable);
+  const stuck: string[] = [];
+  for (;;) {
+    const spots = separate(items, free);
+    const far = [...spots].filter(([id, spot]) => {
+      const rect = items.find((i) => i.id === id)?.rect;
+      return !!rect && Math.hypot(spot.x - rect.x, spot.y - rect.y) > MAX_WIDEN_NUDGE;
+    });
+    if (!far.length) {
+      for (const [id, spot] of spots) {
+        const item = items.find((i) => i.id === id);
+        if (item) moveSheetObject(doc, item, spot);
+      }
+      return { moved: [...spots.keys()], stuck };
+    }
+    for (const [id] of far) {
+      free.delete(id);
+      stuck.push(id);
+    }
+  }
 }
 
 /**

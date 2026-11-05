@@ -21,25 +21,28 @@ All notable changes to this project are documented here. The format follows
   sheet as well as in Replace. The check reports both in drawings that already
   have them. Previous and Next are the arrows beside the Find field, and the
   panel is called Find until Replace is opened.
-- **Autosave to the file.** Where the browser can keep a link to a file (Chrome,
-  Edge), Open and Save link the drawing to the real file on disk and every edit
-  is written to it a moment after it is made, so nothing is lost by forgetting
-  to save or by closing the server. The bar names the file edits go to, or says
-  "No file" when they only reach the browser's own storage. New and Sample
-  unlink the file first, so they can never overwrite it. Browsers without the
-  API keep the download-based Save, and do not show the file name or Reload.
-  A Save that fails says so, in the language of the app, and writes go one at a
-  time, in order. The checks of the file wait their turn behind them, and a change
-  another program makes just after a write is not taken for the write's own.
-- **Reload**, next to Save: reads the file again from disk, as one undo step
-  and without moving the view. The file is checked every two seconds and when
-  the window gets focus back; when something else has changed it, Reload turns
-  amber and autosave pauses rather than overwrite those changes. Save asks
-  before overwriting a file changed from outside. Undoing a Reload does not
-  write the drawing it replaced back over the file: autosave pauses instead,
-  and stays paused even if an edit follows at once. Reload or Open lets it go
-  at once.
-- **Save as…** (`Ctrl+Shift+S`).
+- **Dragging wires in the schematic.** Drag the end of a wire onto another
+  cavity, or another connector, to move it there; drag from a free cavity onto
+  another to make a wire. The cavity under the pointer is outlined, in red when
+  it already has a wire, written on either side. The cavity tables at both ends are rewritten as if
+  typed, the colour and size go with the wire, and it is one undo step. When
+  the two cavities describe the wire differently (another colour or size), a
+  window asks whose details it takes, or offers to join them through a new
+  splice so that each keeps its own; Cancel leaves everything as it was.
+- **Delete wire**: right-click a wire in the schematic, or pick it and press
+  Delete. Both cavities let go of it and nothing else changes: the colour,
+  size, function and notes stay in the row, so putting a wire back finds them
+  there. One undo step.
+- **Right-click menus in the schematic**: the background offers _Zoom to fit_,
+  and a connector or a splice offers _Delete connector_ or _Delete splice_.
+  Deleting disconnects the wires that went to it, deletes its table (a splice has
+  none, and the question does not say so) and takes it off the sheet, after
+  asking, as one undo step.
+- **Wires can start from a splice** (or any connector with no cavities) in the
+  schematic: hover it and drag from the dot on either side onto a cavity.
+- **Right click a wire in the schematic** to change its colour, with the same
+  standard colour picker the sheet uses. The colour is written into the cavity
+  tables at both ends of the wire.
 - **Wire size unit**, **mm²** or **AWG**, as a button in the bar. Choosing the
   other one converts every size in the drawing, as one undo step, to the nearest
   standard size of the new scale, and heads the Section column of every table
@@ -64,44 +67,25 @@ All notable changes to this project are documented here. The format follows
   hand moves in the schematic. It works on the views on screen only, and a drop
   whose nearest free place is more than 240 units away stays where it was
   dropped, with a message, rather than jumping across a long table.
-- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
-  cell, with _Other type…_ and _Clear type_, and, like colour and size, is
-  brought into step at the far end of the wire. Cavity tables have a _Wire type_
-  column, and _Insert → Wire type column in every cavity table_ adds it to
-  existing drawings; a table the wider one now lies on is pushed to the right
-  just far enough to clear it, so the layout stays as it was.
-  Only a column headed _Wire type_ (or _Tipo filo_) counts: a column called just
-  _Type_ is left alone, since older sheets use it for something else. The check
-  warns when the two ends of a wire declare different wire types, as it does for
-  colour and section.
-- **Dragging wires in the schematic.** Drag the end of a wire onto another
-  cavity, or another connector, to move it there; drag from a free cavity onto
-  another to make a wire. The cavity under the pointer is outlined, in red when
-  it already has a wire, written on either side. The cavity tables at both ends are rewritten as if
-  typed, the colour, size and type go with the wire, and it is one undo step. When
-  the two cavities describe the wire differently (another colour, size or type), a
-  window asks whose details it takes, or offers to join them through a new
-  splice so that each keeps its own; Cancel leaves everything as it was.
-- **Delete wire**: right-click a wire in the schematic, or pick it and press
-  Delete. Both cavities let go of it and nothing else changes: the colour,
-  size, type, function and notes stay in the row, so putting a wire back finds them
-  there. One undo step.
-- **Right-click menus in the schematic**: the background offers _Zoom to fit_,
-  and a connector or a splice offers _Delete connector_ or _Delete splice_.
-  Deleting disconnects the wires that went to it, deletes its table and takes it
-  off the sheet, after asking, as one undo step.
-- **Wires can start from a splice** (or any connector with no cavities) in the
-  schematic: hover it and drag from the dot on either side onto a cavity.
-- **Right click a wire in the schematic** to change its colour, with the same
-  standard colour picker the sheet uses. The colour is written into the cavity
-  tables at both ends of the wire.
-- **Defaults** in the bar: wire size, wire type and wire colour. A wire starts
-  from them when it is made, by connecting it in the schematic or by typing a
-  destination into an empty cell, and only then: a wire that is already there,
-  or one that is moved, keeps the cells it has, empty ones included. They fill
-  only what neither end of the wire says anything about, so the two ends never
-  disagree, are saved with the drawing, and the size follows a change of unit
-  (the window that warns about rounding lists it).
+- **Autosave to the file.** Where the browser can keep a link to a file (Chrome,
+  Edge), Open and Save link the drawing to the real file on disk and every edit
+  is written to it a moment after it is made, so nothing is lost by forgetting
+  to save or by closing the server. The bar names the file edits go to, or says
+  "No file" when they only reach the browser's own storage. New and Sample
+  unlink the file first, so they can never overwrite it. Browsers without the
+  API keep the download-based Save, and do not show the file name or Reload.
+  A Save that fails says so, in the language of the app, and writes go one at a
+  time, in order. The checks of the file wait their turn behind them, and a change
+  another program makes just after a write is not taken for the write's own.
+- **Reload**, next to Save: reads the file again from disk, as one undo step
+  and without moving the view. The file is checked every two seconds and when
+  the window gets focus back; when something else has changed it, Reload turns
+  amber and autosave pauses rather than overwrite those changes. Save asks
+  before overwriting a file changed from outside. Undoing a Reload does not
+  write the drawing it replaced back over the file: autosave pauses instead,
+  and stays paused even if an edit follows at once. Reload or Open lets it go
+  at once.
+- **Save as…** (`Ctrl+Shift+S`).
 - **Housing and termination tables**, from the _Insert_ menu and given to every
   new drawing. A housing is the plastic a connector is built on, with its
   number of cavities, part number, maker, series, plug or receptacle and
@@ -109,8 +93,6 @@ All notable changes to this project are documented here. The format follows
   quantity and a _Where Used_ column that are worked out from the cavity tables
   after every edit and cannot be typed over. A new drawing starts with the
   multi-pin and DIN housings and the ring, faston, pin, socket and free-end terminations.
-  It also starts with a Notes table, with one empty note, and a Revisions table
-  with the first issue, beside them.
 - A cavity table takes **one housing**, picked from the housing table, and each
   of its rows **one termination**, picked from the termination table (the new
   _Termination_ column; _Add termination column_ gives it to an older table).
@@ -140,6 +122,25 @@ All notable changes to this project are documented here. The format follows
 - A symbol can say what it stands for in the two tables with `role`
   (`"housing"` or `"termination"`); the round DIN symbol of the bundled plugin
   is a housing.
+- **Wire type** (GPT, GXL, HDT, SXL, TWP, TXL) is picked from a list under the
+  cell, with _Other type…_ and _Clear type_, and, like colour and size, is
+  brought into step at the far end of the wire. Cavity tables have a _Wire type_
+  column, and _Insert → Wire type column in every cavity table_ adds it to
+  existing drawings; a table the wider one now lies on is pushed to the right
+  just far enough to clear it, so the layout stays as it was. What still lies on
+  a connector gives way only as far as 100 units; past that the table stays where
+  it is and the message names it, since the free place the search finds may lie
+  on the bundle. Only a column headed _Wire type_ (or _Tipo filo_) counts: a
+  column called just _Type_ is left alone, since older sheets use it for something
+  else. The check warns when the two ends of a wire declare different wire types,
+  as it does for colour and section.
+- **Defaults** in the bar: wire size, wire type and wire colour. A wire starts
+  from them when it is made, by connecting it in the schematic or by typing a
+  destination into an empty cell, and only then: a wire that is already there,
+  or one that is moved, keeps the cells it has, empty ones included. They fill
+  only what neither end of the wire says anything about, so the two ends never
+  disagree, are saved with the drawing, and the size follows a change of unit
+  (the window that warns about rounding lists it).
 
 ### Changed
 

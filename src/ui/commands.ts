@@ -33,10 +33,10 @@ import { wireRowsWithLength } from "@/core/routing";
 import { wireListRows } from "@/core/wirelist";
 import { getLocale, locales, setLocale } from "@/i18n";
 import { exportPngFile, exportSvgFile, exportWireCsv, printDrawing } from "@/io/exporters";
+import { deleteCatalogFlow, insertCatalog, startingCatalogs } from "@/ui/catalog";
+import { insertTable, viewCenter } from "@/ui/insert";
 import { openFind } from "@/ui/find";
 import { openDefaults } from "@/ui/defaults";
-import { deleteCatalogFlow, insertCatalog, startingTables } from "@/ui/catalog";
-import { insertTable, viewCenter } from "@/ui/insert";
 import { openCommandPalette } from "@/ui/palette";
 import { separateOverlaps, widenTables } from "@/ui/separate";
 import { cycleViewMode, setViewMode, showsBoard, showsSchematic } from "@/ui/viewmode";
@@ -337,12 +337,12 @@ export function registerBuiltinCommands(app: AppContext): void {
     {
       id: "doc.new",
       titleKey: "cmd.new",
-      // a new drawing starts with the catalogues its connectors are made from, the notes and the revisions
+      // a new drawing starts with the two catalogues its connectors are made from
       run: (a) =>
         replaceDocument(a, "dialog.new.title", "dialog.new.body", () => {
           // a new drawing is not the linked file: left linked, the next autosave would empty it
           a.file.detach();
-          a.store.load({ ...emptyDoc(), tables: startingTables(a) });
+          a.store.load({ ...emptyDoc(), tables: startingCatalogs(a) });
         }),
     },
     {
@@ -622,25 +622,6 @@ export function registerBuiltinCommands(app: AppContext): void {
       run: (a) => insertTable(a, cavityTable(a.t, 0, 0, undefined, a.doc.wireUnit)),
     },
     {
-      id: "insert.typeColumn",
-      titleKey: "cmd.insertTypeColumn",
-      run: (a) => {
-        let n = 0;
-        let moved = 0;
-        a.store.edit((doc) => {
-          // the new column makes a table wider: the tables to its right move over by what it gained
-          const result = widenTables(doc, a.renderer, a.store.snapEnabled, () =>
-            addTypeColumn(doc, a.t("table.head.type")),
-          );
-          n = result.widened.length;
-          moved = result.moved;
-        }, "type-column");
-        if (!n) a.toast.show(a.t("toast.typeColumnNone"));
-        else if (moved) a.toast.show(a.t("toast.typeColumnMoved", { n, moved }));
-        else a.toast.show(a.t("toast.typeColumnAdded", { n }));
-      },
-    },
-    {
       id: "insert.housings",
       titleKey: "cmd.insertHousings",
       run: (a) => insertCatalog(a, "housings"),
@@ -649,6 +630,30 @@ export function registerBuiltinCommands(app: AppContext): void {
       id: "insert.terminations",
       titleKey: "cmd.insertTerminations",
       run: (a) => insertCatalog(a, "terminations"),
+    },
+    {
+      id: "insert.typeColumn",
+      titleKey: "cmd.insertTypeColumn",
+      run: (a) => {
+        let n = 0;
+        let moved = 0;
+        let stuck: string[] = [];
+        a.store.edit((doc) => {
+          // the new column makes a table wider: the tables to its right move over by what it gained
+          const result = widenTables(doc, a.renderer, a.store.snapEnabled, () =>
+            addTypeColumn(doc, a.t("table.head.type")),
+          );
+          n = result.widened.length;
+          moved = result.moved;
+          // a table with no free place near enough stays where it was: say which, by connector
+          stuck = result.stuck.map((id) => (findTable(doc, id)?.title ?? "").split(/\s/)[0] || id);
+        }, "type-column");
+        if (!n) a.toast.show(a.t("toast.typeColumnNone"));
+        else if (stuck.length)
+          a.toast.show(a.t("toast.typeColumnStuck", { n, moved, names: stuck.join(", ") }));
+        else if (moved) a.toast.show(a.t("toast.typeColumnMoved", { n, moved }));
+        else a.toast.show(a.t("toast.typeColumnAdded", { n }));
+      },
     },
     {
       id: "insert.notes",

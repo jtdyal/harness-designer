@@ -1,7 +1,7 @@
 import { DOC_VERSION } from "./types";
 import type { DocMeta, HarnessDoc, HNode, Inline, Point, Segment, Table } from "./types";
-import { normalizeDefaults } from "./defaults";
 import { CATALOG_KINDS, catalogWidth, syncCatalogs } from "./catalog";
+import { normalizeDefaults } from "./defaults";
 import { seedIds, uid } from "./ids";
 import { T_MAX, T_MIN, alongPolyline, clamp, dist, polylineLength, projectPolyline } from "./geometry";
 
@@ -488,16 +488,6 @@ export function nodeForTable(doc: HarnessDoc, t: Table): HNode | undefined {
   return doc.nodes.find((n) => n.kind === "connector" && titleMatchesName(t.title, n.name));
 }
 
-/**
- * A cavity table left behind when its connector was turned into a splice: the
- * wires in its rows, and the cells of other tables that name the connector, go
- * nowhere on the drawing until a connector answers to the table again. A table
- * that was never given a connector is not this, and is only a warning.
- */
-export function isOrphanTable(doc: HarnessDoc, table: Table): boolean {
-  return !!table.spliced && isCavityTable(table) && !nodeForTable(doc, table);
-}
-
 export type TitleProblem = "taken" | "unlinked";
 
 /**
@@ -521,6 +511,16 @@ export function titleProblem(doc: HarnessDoc, table: Table, title: string): Titl
 const same = (a: string | undefined, b: string): boolean =>
   (a ?? "").trim().toLowerCase() === b.toLowerCase();
 
+/**
+ * A cavity table left behind when its connector was turned into a splice: the
+ * wires in its rows, and the cells of other tables that name the connector, go
+ * nowhere on the drawing until a connector answers to the table again. A table
+ * that was never given a connector is not this, and is only a warning.
+ */
+export function isOrphanTable(doc: HarnessDoc, table: Table): boolean {
+  return !!table.spliced && isCavityTable(table) && !nodeForTable(doc, table);
+}
+
 /* ============================ Cavity table columns ============================ */
 
 export interface TableColumns {
@@ -531,10 +531,10 @@ export interface TableColumns {
   color?: number;
   section?: number;
   func?: number;
-  /** the wire's insulation type, e.g. GXL or TXL; only an explicit Wire type heading counts */
-  type?: number;
   /** the contact this cavity takes, picked from the termination table */
   termination?: number;
+  /** the wire's insulation type, e.g. GXL or TXL; only an explicit Wire type heading counts */
+  type?: number;
 }
 
 /**
@@ -557,8 +557,8 @@ export function tableColumns(t: Table): TableColumns {
     if (idx.color === undefined && /^(colore|color|colour)$/.test(s)) idx.color = i;
     if (idx.section === undefined && /(sezione|section|gauge|awg|mm²|mm2)/.test(s)) idx.section = i;
     if (idx.func === undefined && /(funzione|function|circuito|circuit|signal)/.test(s)) idx.func = i;
-    if (idx.type === undefined && /^(wire[ -]?type|tipo( di)? filo)$/.test(s)) idx.type = i;
     if (idx.termination === undefined && /^(terminazione|termination)$/.test(s)) idx.termination = i;
+    if (idx.type === undefined && /^(wire[ -]?type|tipo( di)? filo)$/.test(s)) idx.type = i;
   });
 
   if (idx.cavity === undefined) {

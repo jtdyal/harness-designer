@@ -386,9 +386,9 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
   const insertMenu = (ev: MouseEvent): void =>
     dropdown(ev.currentTarget as HTMLElement, [
       { label: t("insert.cavity"), run: run(app, "insert.cavity") },
-      { label: t("insert.typeColumn"), run: run(app, "insert.typeColumn") },
       { label: t("insert.housings"), run: run(app, "insert.housings") },
       { label: t("insert.terminations"), run: run(app, "insert.terminations") },
+      { label: t("insert.typeColumn"), run: run(app, "insert.typeColumn") },
       { label: t("insert.notes"), run: run(app, "insert.notes") },
       { label: t("insert.revisions"), run: run(app, "insert.revisions") },
       { label: t("insert.wirelist"), run: run(app, "insert.wirelist") },
@@ -614,6 +614,11 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
     checkButton.setAttribute("aria-label", state);
   };
 
+  const syncUnit = (): void => {
+    const label = unitButton.querySelector("span");
+    if (label) label.textContent = unitLabel(wireUnitOf(store.doc));
+  };
+
   const syncFile = (): void => {
     const { file } = app;
     // where the browser cannot keep a link to a file there is nothing to name, reload or autosave
@@ -645,17 +650,12 @@ export function renderTopbar(app: AppContext, host: HTMLElement): void {
     );
   };
 
-  const syncUnit = (): void => {
-    const label = unitButton.querySelector("span");
-    if (label) label.textContent = unitLabel(wireUnitOf(store.doc));
-  };
-
   syncEdit();
   syncSnap();
   syncCheck();
+  syncUnit();
   syncFile();
   disposers.push(app.file.onChange(syncFile));
-  syncUnit();
 
   // the count costs a full scan of the tables, so it refreshes once a burst of
   // edits settles rather than on every keystroke
