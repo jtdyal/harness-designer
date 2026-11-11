@@ -85,30 +85,29 @@ export const it = {
   "guide.plugins.install.title": "Come si installa",
   "guide.plugins.install.body": "Dal pannello Plugin, in tre modi:",
   "guide.plugins.install.url":
-    "<code>Aggiungi da URL</code> — indirizzo di un file .js raggiungibile dal browser.",
+    "<code>Aggiungi da URL</code>: indirizzo di un file .js raggiungibile dal browser.",
   "guide.plugins.install.file":
-    "<code>Aggiungi da file</code> — un file sul tuo computer, comodo mentre lo scrivi.",
+    "<code>Aggiungi da file</code>: un file sul tuo computer, comodo mentre lo scrivi.",
   "guide.plugins.install.bundled":
     "Nella copia a file unico i plugin di serie sono già dentro il programma; quelli da URL non sono caricabili, perché il browser non lo consente aprendo la pagina dal disco.",
   "guide.plugins.api.title": "Che cosa mette a disposizione l'API",
   "guide.plugins.api.body": "L'oggetto api ricevuto da activate espone:",
   "guide.plugins.api.commands":
-    "<code>commands.register</code> — comandi con scorciatoia, visibili nella palette (Ctrl+K).",
+    "<code>commands.register</code>: comandi con scorciatoia, visibili nella palette (Ctrl+K).",
   "guide.plugins.api.menu":
-    "<code>menu.contribute</code> — voci nel menù del tasto destro, in base a ciò che è stato cliccato.",
+    "<code>menu.contribute</code>: voci nel menù del tasto destro, in base a ciò che è stato cliccato.",
   "guide.plugins.api.validation":
-    "<code>validation.addRule</code> — controlli propri nel rapporto di Verifica.",
-  "guide.plugins.api.exporters": "<code>exporters.register</code> — nuovi formati nel menù File.",
+    "<code>validation.addRule</code>: controlli propri nel rapporto di Verifica.",
+  "guide.plugins.api.exporters": "<code>exporters.register</code>: nuovi formati nel menù File.",
   "guide.plugins.api.symbols":
-    "<code>symbols.registerConnector</code> — simboli di terminale disegnati da te.",
-  "guide.plugins.api.colors": "<code>colors.registerName</code> — nomi o sigle di colore aggiuntivi.",
-  "guide.plugins.api.i18n": "<code>i18n.add</code> — le tue stringhe, in italiano e in inglese.",
+    "<code>symbols.registerConnector</code>: simboli di terminale disegnati da te.",
+  "guide.plugins.api.colors": "<code>colors.registerName</code>: nomi o sigle di colore aggiuntivi.",
+  "guide.plugins.api.i18n": "<code>i18n.add</code>: le tue stringhe, in italiano e in inglese.",
   "guide.plugins.api.ui":
-    "<code>ui.toast · confirm · prompt · sidebarSection</code> — messaggi, domande e una sezione tua nel pannello.",
-  "guide.plugins.api.events":
-    "<code>events.on(doc | selection | load)</code> — per reagire a ciò che accade.",
+    "<code>ui.toast · confirm · prompt · sidebarSection</code>: messaggi, domande e una sezione tua nel pannello.",
+  "guide.plugins.api.events": "<code>events.on(doc | selection | load)</code>: per reagire a ciò che accade.",
   "guide.plugins.api.storage":
-    "<code>storage.get · set</code> — impostazioni tue, separate da quelle degli altri plugin.",
+    "<code>storage.get · set</code>: impostazioni tue, separate da quelle degli altri plugin.",
   "guide.plugins.edit.title": "Modificare il disegno",
   "guide.plugins.edit.body":
     "Ogni modifica passa da api.edit: il documento cambia in un solo passo di annullamento e il foglio si ridisegna da sé. Non modificare mai il documento fuori da qui.",
@@ -134,9 +133,9 @@ export const it = {
 
   /* ---------------- canvas hints ---------------- */
   "hint.select":
-    "Tasto destro per il menù azioni — trascina gli elementi per spostarli, Ctrl+clic per sceglierne più di uno, trascina il vuoto per la vista, rotella per lo zoom",
+    "Tasto destro per il menù azioni, trascina gli elementi per spostarli, Ctrl+clic per sceglierne più di uno, trascina il vuoto per la vista, rotella per lo zoom",
   "hint.branch":
-    "Disegno ramo — clic per aggiungere punti, clic su un nodo per collegarti; Esc, doppio clic o tasto destro per terminare",
+    "Disegno ramo: clic per aggiungere punti, clic su un nodo per collegarti; Esc, doppio clic o tasto destro per terminare",
 
   /* ---------------- context menu ---------------- */
   "menu.mergeNodes": "⇥ Unisci {n} nodi qui",
@@ -170,6 +169,7 @@ export const it = {
   "cmd.separate": "Separa gli oggetti sovrapposti",
   "toast.separated": "Oggetti separati: {n}",
   "toast.dropFar": "Lasciato sopra un altro oggetto: il posto libero più vicino è troppo lontano",
+  "toast.placedFar": "Qui non c'era posto: la tabella è nel posto libero più vicino, più in là",
   "toast.separatedNone": "Nessuna sovrapposizione",
   "menu.fitView": "Adatta vista",
   "menu.addCavityTable": "+ Tabella cavità qui",
@@ -259,12 +259,12 @@ export const it = {
   "props.inline.title": "Etichetta / componente inline",
   "props.field.text": "Testo",
   "props.field.color": "Colore (nome o #hex)",
-  "props.field.position": "Posizione lungo il ramo (0–1)",
+  "props.field.position": "Posizione lungo il ramo (da 0 a 1)",
 
   "props.table.title": "Tabella",
   "props.field.tableTitle": "Titolo",
   "props.field.linkedNode": "Connettore collegato",
-  "props.linkedNode.none": "— nessuno —",
+  "props.linkedNode.none": "(nessuno)",
   "props.table.colorHelp":
     "Nella colonna Colore scrivi un colore (rosso, nero, #hex…) o più colori separati da virgola per un campione a fasce.",
   "props.table.addRow": "+ Riga",
@@ -335,18 +335,18 @@ export const it = {
   /* ---------------- verifica ---------------- */
   "validate.title": "Verifica coerenza",
   "validate.ok": "✓ Nessun problema: incroci tra tabelle, cavità e riferimenti alle note sono coerenti.",
-  "validate.count": "{n} problemi — clic su una voce per andare all'elemento.",
-  "validate.countOne": "1 problema — clic sulla voce per andare all'elemento.",
+  "validate.count": "{n} problemi: clic su una voce per andare all'elemento.",
+  "validate.countOne": "1 problema: clic sulla voce per andare all'elemento.",
   "validate.noteMissing": "{what}: riferimento [{num}] assente nella tabella Note",
   "validate.nodeLabel": "Nodo {name}",
   "validate.nodeUnnamed": "senza nome",
   "validate.segmentLabel": "Ramo {len}",
   "validate.duplicateTable": "Due tabelle cavità per «{owner}»",
   "validate.jointGap":
-    "Accoppiamento {from}–{to}: le cavità {cavities} sono collegate su {from} e non su {to}",
+    "Accoppiamento fra {from} e {to}: le cavità {cavities} sono collegate su {from} e non su {to}",
   "validate.duplicateCavity": "{owner}: cavità {cavity} duplicata",
   "validate.multiWireCavity":
-    "{owner}: cavità {cavity} con {n} fili verso destinazioni diverse — verifica che sia voluto",
+    "{owner}: cavità {cavity} con {n} fili verso destinazioni diverse, verifica che sia voluto",
   "validate.unknownTarget": "{from} → {dest}: «{name}» non esiste nello schema",
   "validate.missingCavity": "{from} → {dest}: cavità {cavity} assente nella tabella {owner}",
   "validate.crossMismatch": "Incrocio errato: {from} → {dest}, ma {dest} → {back}",
@@ -400,7 +400,7 @@ export const it = {
   "guide.doubleClick":
     "<b>Doppio clic</b> su una cella, un nome, una lunghezza o un'etichetta: si modifica direttamente sul foglio.",
   "guide.rightClick":
-    "<b>Tasto destro</b>: tutte le azioni dell'elemento — righe e colonne, colore, collegamenti, elimina.",
+    "<b>Tasto destro</b>: tutte le azioni dell'elemento (righe e colonne, colore, collegamenti, elimina).",
   "guide.tab":
     "Mentre modifichi una cella: <b>Tab</b> passa alla successiva, <b>Invio</b> scende, <b>Esc</b> annulla.",
   "guide.branch": "<b>B</b> o tasto destro sul vuoto per disegnare un ramo; Esc per terminare.",
@@ -498,14 +498,15 @@ export const it = {
   "dialog.wireDetails.target": "Usa i dati di {name}",
   "dialog.wireDetails.splice": "Unisci con un nuovo splice",
   "toast.rewire.splice": "{from} e {to} unite con il nuovo splice {splice}",
+  "toast.branchSplit": "Il ramo da {len} è stato diviso: scrivi la lunghezza dei due pezzi",
   "toast.rewire.moved": "Filo {from} spostato su {to}",
   "toast.rewire.made": "{from} collegato a {to}",
-  "toast.rewire.occupied": "{to} ha già un filo, verso {other}",
+  "toast.rewire.occupied": "{to} è già collegato a {other}",
   "toast.rewire.same-connector": "Un filo non può andare da un connettore a se stesso",
   "toast.rewire.no-table": "{to} non ha una tabella delle cavità dove tenere il filo",
   "toast.rewire.no-end": "Un filo non può andare lì",
   "menu.wireDelete": "Elimina filo",
-  "toast.wireDeleted": "Filo {from} – {to} eliminato",
+  "toast.wireDeleted": "Filo da {from} a {to} eliminato",
   "toast.wireDeleteNone": "Questo filo non è più nelle tabelle",
   "menu.zoomToFit": "Adatta vista",
   "menu.deleteConnector": "Elimina connettore",
@@ -544,13 +545,14 @@ export const it = {
   "dialog.unitFits.title": "Le sezioni sono già in {unit}?",
   "dialog.unitFits.body":
     "Queste sezioni ({sizes}) non sono sezioni {from} standard ma sono sezioni {unit} standard. Se sono già in {unit}, basta chiamare la colonna {unit} senza convertire nulla.",
-  "dialog.unitFits.yes": "Etichetta solo {unit}",
+  "dialog.unitFits.yes": "Cambia solo l'intestazione in {unit}",
   "dialog.unitFits.no": "No, convertile",
   "dialog.unit.title": "Convertire le sezioni in {unit}?",
   "dialog.unit.body":
     "Le due scale non coincidono. Le sezioni sono arrotondate alla misura standard più vicina dell'altra scala, quindi riconvertendo non si ritrovano le sezioni di prima:\n\n{lines}\n\nUn filo che risulta più sottile porta meno corrente. Ctrl+Z annulla la conversione.",
   "dialog.unit.thinner": "{pct} % più sottile",
   "dialog.unit.thicker": "{pct} % più spesso",
+  "dialog.unit.default": "• Sezione predefinita: {from} → {to}: {how}",
   "dialog.unit.more": "• e altre {n} sezioni",
   "dialog.unit.confirm": "Converti",
   "topbar.defaults": "Predefiniti",
@@ -576,18 +578,18 @@ export const it = {
   "topbar.reload": "Ricarica",
   "topbar.reload.tip": "Rilegge il file dal disco (Ctrl+Z annulla)",
   "topbar.reload.stale": "Il file è cambiato sul disco: clicca per caricare le modifiche",
-  "topbar.reload.none": "Ricaricare richiede un file: usa prima Apri o Salva",
+  "topbar.reload.none": "Per ricaricare serve un file: usa prima Apri o Salva",
   "topbar.file.none": "Nessun file",
   "topbar.file.none.tip":
-    "Il salvataggio automatico tiene solo una copia in questo browser. Apri o Salva per collegare un file su disco e ogni modifica vi verrà scritta.",
+    "Il salvataggio automatico tiene solo una copia in questo browser. Apri o Salva per collegare un file su disco, così ogni modifica viene salvata lì.",
   "topbar.file.linked.tip": "Ogni modifica viene salvata automaticamente su {name}",
   "topbar.file.readonly.tip":
     "L'accesso in scrittura a {name} è stato negato: le modifiche non vengono salvate",
-  "toast.openedFile": "Aperto {name}: le modifiche vi vengono salvate automaticamente",
-  "toast.savedFile": "Salvato su {name}: le modifiche vi vengono salvate automaticamente",
+  "toast.openedFile": "Aperto {name}: da ora le modifiche si salvano lì in automatico",
+  "toast.savedFile": "Salvato su {name}: da ora le modifiche si salvano lì in automatico",
   "toast.reloaded": "Ricaricato {name} (Ctrl+Z annulla)",
   "toast.fileChanged":
-    "Il file è cambiato sul disco. Il salvataggio automatico è in pausa: Ricarica per prendere le modifiche, oppure Salva per sovrascriverle.",
+    "Il file è cambiato sul disco. Il salvataggio automatico è in pausa: Ricarica per caricare le modifiche, oppure Salva per sovrascriverle.",
   "file.error.permission": "il permesso di scrivere sul file non è stato dato",
   "file.error.noFile": "nessun file è collegato a questo disegno",
   "toast.saveFailed": "Impossibile salvare sul file: {error}",
@@ -604,7 +606,7 @@ export const it = {
   "toast.pluginFailed": "Plugin «{name}» non caricato: {error}",
   "toast.titleTaken": "Un'altra tabella ha già questo nome",
   "toast.titleUnlinked":
-    "Questa è la tabella di {name}: il titolo deve iniziare con quel nome. Rinomina il connettore per rinominare entrambi.",
+    "Questa è la tabella di {name}: il titolo deve iniziare con quel nome. Rinomina il connettore per rinominare entrambi. Se la tabella è di un altro connettore, sceglilo con Collega a un connettore… nel menu del tasto destro della tabella.",
   "toast.offlineReady": "Applicazione disponibile anche offline",
   "toast.updateReady": "È pronta una versione più recente",
   "toast.updateReload": "Ricarica",
@@ -612,7 +614,8 @@ export const it = {
   "toast.nodesMerged": "Uniti {n} nodi in uno",
   "toast.copiedOne": "Copiato: incollalo dove ti serve con Ctrl+V",
   "toast.copied": "Copiati {n} elementi: incollali dove ti servono con Ctrl+V",
-  "toast.copyRefused": "Il cartiglio non si copia: ce n'è uno solo per foglio",
+  "toast.copyRefused":
+    "Il cartiglio e le tabelle di alloggiamenti e terminali non si copiano: in un disegno ce n'è uno solo per tipo",
   "toast.pastedOne": "Incollato qui",
   "toast.pasted": "Incollati qui {n} elementi",
   "toast.pasteRefused": "Niente da incollare qui",
@@ -680,7 +683,7 @@ export const it = {
   "catalog.head.quantity": "Quantità",
   "catalog.head.whereUsed": "Dove si usa",
   "catalog.head.termination": "Tipo di terminale",
-  "catalog.form.none": "—",
+  "catalog.form.none": "Non indicata",
   "catalog.form.plug": "Spina",
   "catalog.form.receptacle": "Presa",
   "catalog.symbol": "Simbolo",

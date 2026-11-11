@@ -83,28 +83,28 @@ export const en = {
     "A JavaScript file exporting an object with an activate(api) method. Nothing to compile: write it, install it, it runs. Here is a complete template to start from.",
   "guide.plugins.install.title": "How to install one",
   "guide.plugins.install.body": "From the Plugins panel, in three ways:",
-  "guide.plugins.install.url": "<code>Add from URL</code> — address of a .js file the browser can reach.",
+  "guide.plugins.install.url": "<code>Add from URL</code>: address of a .js file the browser can reach.",
   "guide.plugins.install.file":
-    "<code>Add from file</code> — a file on your computer, handy while writing it.",
+    "<code>Add from file</code>: a file on your computer, handy while writing it.",
   "guide.plugins.install.bundled":
     "In the single-file copy the built-in plugins are already inside the program; URL ones cannot be loaded, because the browser forbids it when the page is opened from disk.",
   "guide.plugins.api.title": "What the API offers",
   "guide.plugins.api.body": "The api object passed to activate exposes:",
   "guide.plugins.api.commands":
-    "<code>commands.register</code> — commands with shortcuts, listed in the palette (Ctrl+K).",
+    "<code>commands.register</code>: commands with shortcuts, listed in the palette (Ctrl+K).",
   "guide.plugins.api.menu":
-    "<code>menu.contribute</code> — right-click menu entries, based on what was clicked.",
-  "guide.plugins.api.validation": "<code>validation.addRule</code> — your own checks in the Check report.",
-  "guide.plugins.api.exporters": "<code>exporters.register</code> — new formats in the File menu.",
+    "<code>menu.contribute</code>: right-click menu entries, based on what was clicked.",
+  "guide.plugins.api.validation": "<code>validation.addRule</code>: your own checks in the Check report.",
+  "guide.plugins.api.exporters": "<code>exporters.register</code>: new formats in the File menu.",
   "guide.plugins.api.symbols":
-    "<code>symbols.registerConnector</code> — termination symbols you draw yourself.",
-  "guide.plugins.api.colors": "<code>colors.registerName</code> — extra colour names or codes.",
-  "guide.plugins.api.i18n": "<code>i18n.add</code> — your strings, in Italian and English.",
+    "<code>symbols.registerConnector</code>: termination symbols you draw yourself.",
+  "guide.plugins.api.colors": "<code>colors.registerName</code>: extra colour names or codes.",
+  "guide.plugins.api.i18n": "<code>i18n.add</code>: your strings, in Italian and English.",
   "guide.plugins.api.ui":
-    "<code>ui.toast · confirm · prompt · sidebarSection</code> — messages, questions and your own panel section.",
-  "guide.plugins.api.events": "<code>events.on(doc | selection | load)</code> — to react to what happens.",
+    "<code>ui.toast · confirm · prompt · sidebarSection</code>: messages, questions and your own panel section.",
+  "guide.plugins.api.events": "<code>events.on(doc | selection | load)</code>: to react to what happens.",
   "guide.plugins.api.storage":
-    "<code>storage.get · set</code> — your own settings, kept apart from other plugins.",
+    "<code>storage.get · set</code>: your own settings, kept apart from other plugins.",
   "guide.plugins.edit.title": "Changing the drawing",
   "guide.plugins.edit.body":
     "Every change goes through api.edit: the document changes in a single undo step and the sheet redraws itself. Never mutate the document outside it.",
@@ -130,9 +130,9 @@ export const en = {
 
   /* ---------------- canvas hints ---------------- */
   "hint.select":
-    "Right-click for the action menu — drag elements to move them, Ctrl+click to pick more than one, drag empty space to pan, wheel to zoom",
+    "Right-click for the action menu, drag elements to move them, Ctrl+click to pick more than one, drag empty space to pan, wheel to zoom",
   "hint.branch":
-    "Drawing a branch — click to add points, click a node to connect; Esc, double click or right-click to finish",
+    "Drawing a branch: click to add points, click a node to connect; Esc, double click or right-click to finish",
 
   /* ---------------- context menu ---------------- */
   "menu.mergeNodes": "⇥ Merge {n} nodes here",
@@ -166,6 +166,7 @@ export const en = {
   "cmd.separate": "Separate overlapping objects",
   "toast.separated": "Objects moved apart: {n}",
   "toast.dropFar": "Left on top of another object: the nearest free place is too far away",
+  "toast.placedFar": "No room here: the table went to the nearest free place, farther off",
   "toast.separatedNone": "Nothing overlaps",
   "menu.fitView": "Fit view",
   "menu.addCavityTable": "+ Cavity table here",
@@ -254,12 +255,12 @@ export const en = {
   "props.inline.title": "Inline label / component",
   "props.field.text": "Text",
   "props.field.color": "Colour (name or #hex)",
-  "props.field.position": "Position along the branch (0–1)",
+  "props.field.position": "Position along the branch (from 0 to 1)",
 
   "props.table.title": "Table",
   "props.field.tableTitle": "Title",
   "props.field.linkedNode": "Linked connector",
-  "props.linkedNode.none": "— none —",
+  "props.linkedNode.none": "(none)",
   "props.table.colorHelp":
     "In the Colour column type a colour (red, black, #hex…) or several colours separated by commas for a banded swatch.",
   "props.table.addRow": "+ Row",
@@ -330,17 +331,18 @@ export const en = {
   /* ---------------- validation ---------------- */
   "validate.title": "Consistency check",
   "validate.ok": "✓ No problems: cross-references, cavities and note references are consistent.",
-  "validate.count": "{n} problems — click an entry to jump to the element.",
-  "validate.countOne": "1 problem — click the entry to jump to the element.",
+  "validate.count": "{n} problems: click an entry to jump to the element.",
+  "validate.countOne": "1 problem: click the entry to jump to the element.",
   "validate.noteMissing": "{what}: reference [{num}] is missing from the Notes table",
   "validate.nodeLabel": "Node {name}",
   "validate.nodeUnnamed": "unnamed",
   "validate.segmentLabel": "Branch {len}",
   "validate.duplicateTable": "Two cavity tables for “{owner}”",
-  "validate.jointGap": "Joint {from}–{to}: cavities {cavities} are wired on {from} and not on {to}",
+  "validate.jointGap":
+    "Joint between {from} and {to}: cavities {cavities} are wired on {from} and not on {to}",
   "validate.duplicateCavity": "{owner}: cavity {cavity} is duplicated",
   "validate.multiWireCavity":
-    "{owner}: cavity {cavity} carries {n} wires to different destinations — check this is intended",
+    "{owner}: cavity {cavity} carries {n} wires to different destinations, check this is intended",
   "validate.unknownTarget": "{from} → {dest}: “{name}” does not exist in the drawing",
   "validate.missingCavity": "{from} → {dest}: cavity {cavity} is missing from table {owner}",
   "validate.crossMismatch": "Wrong cross-reference: {from} → {dest}, but {dest} → {back}",
@@ -393,7 +395,7 @@ export const en = {
   "guide.doubleClick":
     "<b>Double-click</b> a cell, a name, a length or a label: you edit it straight on the sheet.",
   "guide.rightClick":
-    "<b>Right-click</b>: every action for that element — rows and columns, colour, links, delete.",
+    "<b>Right-click</b>: every action for that element (rows and columns, colour, links, delete).",
   "guide.tab":
     "While editing a cell: <b>Tab</b> moves to the next one, <b>Enter</b> goes down, <b>Esc</b> cancels.",
   "guide.branch": "<b>B</b> or right-click on empty space to draw a branch; Esc to finish.",
@@ -491,6 +493,7 @@ export const en = {
   "dialog.wireDetails.target": "Use {name}'s details",
   "dialog.wireDetails.splice": "Join through a new splice",
   "toast.rewire.splice": "{from} and {to} joined through the new splice {splice}",
+  "toast.branchSplit": "The {len} branch was split: type the length of the two pieces",
   "toast.rewire.moved": "Wire {from} moved to {to}",
   "toast.rewire.made": "Connected {from} to {to}",
   "toast.rewire.occupied": "{to} already has a wire, to {other}",
@@ -498,7 +501,7 @@ export const en = {
   "toast.rewire.no-table": "{to} has no cavity table to keep the wire in",
   "toast.rewire.no-end": "A wire cannot go there",
   "menu.wireDelete": "Delete wire",
-  "toast.wireDeleted": "Wire {from} – {to} deleted",
+  "toast.wireDeleted": "Wire from {from} to {to} deleted",
   "toast.wireDeleteNone": "That wire is no longer in the tables",
   "menu.zoomToFit": "Zoom to fit",
   "menu.deleteConnector": "Delete connector",
@@ -541,6 +544,7 @@ export const en = {
     "The two scales do not line up. Sizes are rounded to the nearest standard size of the other scale, so converting back does not restore the earlier sizes:\n\n{lines}\n\nA wire that comes out thinner carries less current. Ctrl+Z undoes the conversion.",
   "dialog.unit.thinner": "{pct} % thinner",
   "dialog.unit.thicker": "{pct} % thicker",
+  "dialog.unit.default": "• Default size: {from} → {to}: {how}",
   "dialog.unit.more": "• and {n} more sizes",
   "dialog.unit.confirm": "Convert",
   "topbar.defaults": "Defaults",
@@ -593,7 +597,7 @@ export const en = {
   "toast.pluginFailed": "Plugin “{name}” failed to load: {error}",
   "toast.titleTaken": "Another table already has that name",
   "toast.titleUnlinked":
-    "This is the table of {name}: its title has to start with that name. Rename the connector to rename both.",
+    "This is the table of {name}: its title has to start with that name. Rename the connector to rename both. If the table belongs to another connector, pick it with Link to a connector… in the table's right-click menu.",
   "toast.offlineReady": "Application available offline too",
   "toast.updateReady": "A newer version is ready",
   "toast.updateReload": "Reload",
@@ -601,7 +605,8 @@ export const en = {
   "toast.nodesMerged": "{n} nodes merged into one",
   "toast.copiedOne": "Copied: paste it where you need with Ctrl+V",
   "toast.copied": "{n} items copied: paste them where you need with Ctrl+V",
-  "toast.copyRefused": "The title block is not copied: there is one to a sheet",
+  "toast.copyRefused":
+    "The title block and the housing and termination tables are not copied: there is one of each to a drawing",
   "toast.pastedOne": "Pasted here",
   "toast.pasted": "{n} items pasted here",
   "toast.pasteRefused": "Nothing to paste here",
@@ -669,7 +674,7 @@ export const en = {
   "catalog.head.quantity": "Quantity",
   "catalog.head.whereUsed": "Where Used",
   "catalog.head.termination": "Termination Type",
-  "catalog.form.none": "—",
+  "catalog.form.none": "Not given",
   "catalog.form.plug": "Plug",
   "catalog.form.receptacle": "Receptacle",
   "catalog.symbol": "Symbol",

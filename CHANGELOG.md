@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0]
+
 ### Added
 
 - **Black wires show in the dark theme.** A wire that is black or nearly so gets
@@ -49,24 +51,42 @@ All notable changes to this project are documented here. The format follows
   (and the wire list) with the unit. Text that is not a size is left as typed.
   The unit is saved with the drawing. Editing a Section cell opens the list of
   standard sizes for the unit, each with its equivalent in the other, and
-  _Other size…_ for anything not on it. The scales do not line up, so a
-  conversion rounds to the nearest standard size and going to AWG and back can
+  _Other size…_ for anything not on it. A size picked there, or carried to the
+  other end of the wire, is written the way that table writes its sizes: bare
+  under a heading that names the unit, _1.5 mm²_ or _16 AWG_ under a plain
+  _Section_. The wire list and its CSV follow the same rule for their own
+  Section column, whatever the cavity tables the sizes come from are headed:
+  bare under _mm²_ or _AWG_, with the unit under a plain _Section_, and a size
+  in the other unit keeps its unit. A wire whose one end leaves the size,
+  colour or function empty takes the other end's in the list. A size typed
+  with a decimal comma (_1,5_) comes out with a point there, in a default size
+  written into a new wire, in a size carried to the other end and in the
+  check's _sections disagree_ warning and the question asked when a wire is
+  dropped, which name both sizes with their unit; the warning does not fire
+  when they differ only by the separator, nor for a dash, and it also compares
+  a wire only one end of which names the other. The cell itself keeps what
+  was typed. The scales do not line up, so a conversion rounds to the nearest standard size and going to AWG and back can
   land on a neighbouring size; when any size would change, a window lists each
   one, with how much thinner or thicker the wire becomes and in how many places,
   and asks before anything is written. Only the cavity tables and the wire list
   are touched, a table whose heading names a unit (AWG, mm²) is read in that unit,
   and a drawing whose bare sizes are really gauges (an 18 or a 22 under a plain
-  _Section_) is asked whether to just label them. Choosing the unit the drawing
-  is already in does nothing.
+  _Section_) is asked whether to just label them; a table whose heading names
+  the other unit is still converted then, and the window still lists it.
+  Choosing the unit the drawing is already in does nothing.
 - **Objects no longer lie on top of each other.** Drop a table or a connector on
   the sheet, or a box in the schematic, on top of another and it goes to the
   nearest free place instead, a little way off and on the grid, as part of the
-  same undo step. _Separate overlapping objects_ (in the command palette and the
-  sheet's background menu) clears up drawings that already have objects on top of
-  each other: tables give way to connectors, and only a box somebody placed by
+  same undo step. A table added from _Insert_ or a right-click menu goes to the
+  nearest free place in the same way. _Separate overlapping objects_ (in the
+  command palette and the sheet's background menu) clears up drawings that
+  already have objects on top of each other: tables give way to connectors, and only a box somebody placed by
   hand moves in the schematic. It works on the views on screen only, and a drop
-  whose nearest free place is more than 240 units away stays where it was
-  dropped, with a message, rather than jumping across a long table.
+  whose nearest free place is more than 240 units away stays where it was put,
+  with a message, rather than jumping across a long table. A table added keeps
+  off the branches too and is never left on top of anything: a tall one, such
+  as the wire list, goes to the nearest free place however far it is, with a
+  message, and the view moves to it.
 - **Autosave to the file.** Where the browser can keep a link to a file (Chrome,
   Edge), Open and Save link the drawing to the real file on disk and every edit
   is written to it a moment after it is made, so nothing is lost by forgetting
@@ -137,10 +157,16 @@ All notable changes to this project are documented here. The format follows
 - **Defaults** in the bar: wire size, wire type and wire colour. A wire starts
   from them when it is made, by connecting it in the schematic or by typing a
   destination into an empty cell, and only then: a wire that is already there,
-  or one that is moved, keeps the cells it has, empty ones included. They fill
+  or one that is moved, keeps the cells it has, empty ones included. Two
+  cavities joined through a new splice are two new wires and each starts from
+  them, except a wire that was moved there. They fill
   only what neither end of the wire says anything about, so the two ends never
   disagree, are saved with the drawing, and the size follows a change of unit
-  (the window that warns about rounding lists it).
+  (the window that warns about rounding lists it on a line of its own). The
+  size is written the way the table writes its sizes: the bare number under a
+  heading that names the unit, _1.5 mm²_ or _16 AWG_ under a plain _Section_.
+  The check and the question when a wire is dropped read the two ends' sizes
+  in the unit of each column, so _1.5_ and _1.5 mm²_ are one size.
 
 ### Changed
 
@@ -152,6 +178,11 @@ All notable changes to this project are documented here. The format follows
   _Drawn as_, for a drawing that has neither table and for a connector whose
   table names neither, so a ring or faston end can still be made.
 - The round-connector example plugin no longer adds its own menu entry.
+- Splitting a branch, with _Split branch here_ or for the junction a new splice
+  needs, no longer leaves the whole length on the first piece. The junction is
+  put where it is easy to draw, not where it is on the harness, so both pieces
+  are left without a length and a message gives the one the branch had, to be
+  written again on each.
 
 ## [1.2.0]
 
@@ -160,11 +191,11 @@ All notable changes to this project are documented here. The format follows
 - A second way of reading the same harness: the **schematic**. Every connector
   becomes a box of its cavities, carrying the full title its cavity table has on
   the sheet, and every wire in the list becomes a line from one cavity to
-  another in the colour it is really made of. Nothing is stored twice — it is
+  another in the colour it is really made of. Nothing is stored twice: it is
   the cavity tables read a second way, so it cannot drift out of step with them.
 - A view selector in the bar, and `V` to go round the three: the sheet on its
   own, the schematic on its own, or the two side by side. What is picked in one
-  lights up in the other — a connector shows its box and its wires, a branch
+  lights up in the other: a connector shows its box and its wires, a branch
   shows every wire that runs through it, and a wire picked in the schematic
   lights the whole road it takes across the harness, branch by branch. That last
   one is the question nobody could answer before without two sheets of paper and
@@ -173,7 +204,7 @@ All notable changes to this project are documented here. The format follows
   the wiring they are from the busiest one, and each column is ordered so the
   wires cross as little as possible and arrive level. Wires run square, take the
   clear lane between the boxes rather than straight through whatever stands in
-  the way, and are never drawn on top of each other — two grounds onto the same
+  the way, and are never drawn on top of each other. Two grounds onto the same
   ring terminal are two lines with daylight between them, not one line that
   happens to be two. A box can be dragged where it suits, and **moving one box
   moves only that box**: the arrangement is worked out with it still in the
@@ -190,7 +221,7 @@ All notable changes to this project are documented here. The format follows
   eight arriving on the middle of one face and the one leaving the middle of the
   other. The box is as tall as its fan needs to be.
 - A mated pair carries the same double arrow the sheet uses, with the two halves
-  set side by side and level so the pairing is plain — and the colour changing
+  set side by side and level so the pairing is plain, and the colour changing
   across it is plain with it.
 - Wires in the schematic turn on a wide radius instead of a square corner, and
   leave a connector far enough out to have the room to do it.
@@ -201,13 +232,13 @@ All notable changes to this project are documented here. The format follows
   four-cylinder petrol car, in English. Battery, main fuse and body ground, fuse
   and relay box, alternator, an ECU on two connectors, four injectors, four
   coil-on-plug coils, crank, cam, manifold, coolant, oxygen and knock sensors,
-  three splices, two mated pairs — the bulkhead and a flying pair for the sensor
-  sub-harness — and the run through to the cluster and the diagnostic socket.
+  three splices, two mated pairs (the bulkhead and a flying pair for the sensor
+  sub-harness) and the run through to the cluster and the diagnostic socket.
   Twenty-four pin-outs and seventy-odd wires, each cavity table beside the
   connector it belongs to, and not one problem in its own check: every wire is
   declared once and both ends are written from that, so the two can never
   disagree. Both the sheet and the schematic are laid out by hand rather than
-  left to the automatic arrangement — an example is worth the trouble of being
+  left to the automatic arrangement: an example is worth the trouble of being
   arranged.
 - Making the window narrower, or switching between one view and two, keeps what
   was in the middle of a view in the middle of it. A view still exactly as the
@@ -228,9 +259,9 @@ All notable changes to this project are documented here. The format follows
 - Copy and paste: `Ctrl+C` takes whatever is selected, `Ctrl+V` puts an
   identical one down with its corner exactly where the pointer is. The
   right-click menu offers the same, and pastes at the point that was clicked.
-  References inside the copy follow the copies — two connectors copied together
+  References inside the copy follow the copies: two connectors copied together
   stay mated, a branch keeps its ends, a cavity table copied with its connector
-  goes on belonging to it — while references out of it are dropped, so a copy
+  goes on belonging to it. References out of it are dropped, so a copy
   never lays claim to what the original owns. A copied connector is given a free
   name. The title block is not copied: there is one to a sheet.
 - Inline labels take any colour, not only the six presets, and the menu marks
@@ -259,7 +290,7 @@ All notable changes to this project are documented here. The format follows
 
 - Each half of a circuit running through a joint is drawn in the colour its own
   end declares. The wire list keeps one colour per wire, which is right until a
-  joint makes it two wires — and the whole point of a joint is that the colour
+  joint makes it two wires, and the whole point of a joint is that the colour
   is allowed to change there.
 
 ## [1.1.3]

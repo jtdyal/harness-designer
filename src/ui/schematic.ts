@@ -2,13 +2,13 @@
  * Interaction in the schematic view.
  *
  * Far less than the sheet allows, on purpose: the schematic is read, not
- * drawn. What can be done here is look — pan, zoom, pick a connector or a wire
- * to see what it is on the formboard — and move a box, which is the one thing
+ * drawn. What can be done here is look (pan, zoom, pick a connector or a wire
+ * to see what it is on the formboard) and move a box, which is the one thing
  * about the schematic that is a decision rather than a consequence.
  *
  * Everything picked goes through the ordinary selection, so the sheet lights up
  * without knowing this view exists. A wire is the exception: it is not an
- * element of the document — it is what two cavity tables say between them — so
+ * element of the document (it is what two cavity tables say between them), so
  * it is held by the schematic renderer and read back by the sheet.
  */
 import { cloneDoc } from "@/core/doc";
@@ -250,7 +250,7 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
 
   /** Writes the wire into the tables, and says what came of it. */
   const commitWire = (op: WireOp, to: string, choice?: Prefer | "splice"): void => {
-    let outcome = { ok: false, reason: "no-end" } as RewireOutcome & { splice?: string };
+    let outcome = { ok: false, reason: "no-end" } as RewireOutcome & { splice?: string; split?: string };
     const prefer = choice === "splice" ? undefined : choice;
     store.edit((doc) => {
       if (choice === "splice") outcome = connectViaSplice(doc, op, to);
@@ -268,6 +268,7 @@ export function attachSchematicInteraction(opts: SchematicInteractionOptions): (
     if (outcome.splice) {
       focusWire(null);
       opts.notify?.(t("toast.rewire.splice", { from: kept, to, splice: outcome.splice }), "info");
+      if (outcome.split) opts.notify?.(t("toast.branchSplit", { len: outcome.split }), "info");
       return;
     }
     const made = schematic
